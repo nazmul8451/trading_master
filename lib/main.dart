@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'core/routes/app_routes.dart';
+import 'feature/view/dashboard/dashboard_screen.dart';
 import 'feature/view/onboarding_screen/get_started.dart';
 import 'feature/view/onboarding_screen/protocol_confirmation.dart';
 
@@ -33,6 +34,7 @@ class MyApp extends StatelessWidget {
           routes: {
             AppRoutes.getStarted: (context) => const GetStartedScreen(),
             AppRoutes.protocolConfirmation: (context) => const ProtocolConfirmationScreen(),
+            AppRoutes.dashboard: (context) => const DashboardScreen(),
           },
         );
       },

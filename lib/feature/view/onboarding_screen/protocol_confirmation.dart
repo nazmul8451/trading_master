@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_typography.dart';
+import '../../../core/routes/app_routes.dart';
 
 class ProtocolConfirmationScreen extends StatefulWidget {
   const ProtocolConfirmationScreen({Key? key}) : super(key: key);
@@ -100,7 +101,15 @@ class _ProtocolConfirmationScreenState extends State<ProtocolConfirmationScreen>
               ),
               SizedBox(height: 24.h.clamp(20, 32)),
               ElevatedButton(
-                onPressed: _checkedItems.contains(false) ? null : () {},
+                onPressed: _checkedItems.contains(false)
+                    ? null
+                    : () {
+                        Navigator.pushNamedAndRemoveUntil(
+                          context,
+                          AppRoutes.dashboard,
+                          (route) => false,
+                        );
+                      },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   foregroundColor: AppColors.textMain,
