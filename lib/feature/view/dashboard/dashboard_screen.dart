@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_typography.dart';
+import '../bottomNavigations_screen/home_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({Key? key}) : super(key: key);
@@ -14,7 +15,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   int _selectedIndex = 0;
 
   final List<Widget> _screens = [
-    const Center(child: Text("Home")),
+    const HomeScreen(),
     const Center(child: Text("Analytics")),
     const Center(child: Text("Log Trade")),
     const Center(child: Text("Plan")),
