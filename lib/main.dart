@@ -5,8 +5,16 @@ import 'feature/view/dashboard/dashboard_screen.dart';
 import 'feature/view/onboarding_screen/get_started.dart';
 import 'feature/view/onboarding_screen/protocol_confirmation.dart';
 
+import 'package:device_preview/device_preview.dart';
+import 'package:flutter/foundation.dart';
+
 void main() {
-  runApp(const MyApp());
+  runApp(
+    DevicePreview(
+      enabled: !kReleaseMode,
+      builder: (context) => const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -20,6 +28,9 @@ class MyApp extends StatelessWidget {
       splitScreenMode: true,
       builder: (_, child) {
         return MaterialApp(
+          useInheritedMediaQuery: true,
+          locale: DevicePreview.locale(context),
+          builder: DevicePreview.appBuilder,
           debugShowCheckedModeBanner: false,
           title: 'Trade Manager',
           theme: ThemeData(
