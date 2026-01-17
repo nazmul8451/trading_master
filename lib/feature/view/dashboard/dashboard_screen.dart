@@ -4,6 +4,8 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_typography.dart';
 import '../bottomNavigations_screen/home_screen.dart';
 
+import '../bottomNavigations_screen/plane.dart';
+
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({Key? key}) : super(key: key);
 
@@ -14,11 +16,13 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   int _selectedIndex = 0;
 
+
+
   final List<Widget> _screens = [
     const HomeScreen(),
     const Center(child: Text("Analytics")),
     const Center(child: Text("Log Trade")),
-    const Center(child: Text("Plan")),
+    const PlaneScreen(),
     const Center(child: Text("Settings")),
   ];
 
