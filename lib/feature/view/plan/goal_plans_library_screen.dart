@@ -5,6 +5,7 @@ import '../../../core/constants/app_typography.dart';
 import '../../service/plan_storage_service.dart';
 import '../../model/plan_model.dart';
 import '../../controller/plan_controller.dart';
+import 'goal_plan_detail_screen.dart';
 
 class GoalPlansLibraryScreen extends StatefulWidget {
   const GoalPlansLibraryScreen({super.key});
@@ -221,6 +222,46 @@ class _GoalPlansLibraryScreenState extends State<GoalPlansLibraryScreen> {
                 ),
               ),
             ],
+          ),
+          SizedBox(height: 16.h.clamp(12, 20).toDouble()),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => GoalPlanDetailScreen(plan: plan),
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: AppColors.textMain,
+                padding: EdgeInsets.symmetric(
+                  vertical: 12.h.clamp(10, 14).toDouble(),
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.r.clamp(6, 10).toDouble()),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'View Details',
+                    style: AppTypography.buttonText.copyWith(
+                      fontSize: 14.sp.clamp(12, 16).toDouble(),
+                    ),
+                  ),
+                  SizedBox(width: 8.w.clamp(6, 10).toDouble()),
+                  Icon(
+                    Icons.arrow_forward,
+                    size: 16.sp.clamp(14, 18).toDouble(),
+                  ),
+                ],
+              ),
+            ),
           ),
         ],
       ),
