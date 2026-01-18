@@ -37,8 +37,8 @@ class GoalSheetScreen extends StatelessWidget {
         title: const Text('Goal Sheet'),
         actions: [
           IconButton(
-            icon:  Icon(Icons.save),
-            onPressed: () => Navigator.pop(context),
+            icon: const Icon(Icons.save),
+            onPressed: () => _savePlan(context),
             tooltip: 'Save Plan',
           ),
         ],

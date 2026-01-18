@@ -28,6 +28,17 @@ class PlanStorageService {
     }
   }
 
+  Future<void> updatePlan(PlanModel updatedPlan) async {
+    List<dynamic> plansJson = _storage.read(_storageKey) ?? [];
+    List<PlanModel> plans = plansJson.map((json) => PlanModel.fromJson(json as Map<String, dynamic>)).toList();
+    
+    int index = plans.indexWhere((p) => p.id == updatedPlan.id);
+    if (index != -1) {
+      plansJson[index] = updatedPlan.toJson();
+      await _storage.write(_storageKey, plansJson);
+    }
+  }
+
   Future<void> clearAllPlans() async {
     await _storage.remove(_storageKey);
   }

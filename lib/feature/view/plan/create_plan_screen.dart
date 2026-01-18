@@ -30,6 +30,7 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
   void _calculateAndNavigate() {
     if (_formKey.currentState!.validate()) {
       final plan = PlanModel(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
         startCapital: double.parse(_capitalController.text),
         targetPercent: double.parse(_targetController.text),
         duration: int.parse(_durationController.text),
