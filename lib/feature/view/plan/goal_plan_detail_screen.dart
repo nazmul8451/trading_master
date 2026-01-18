@@ -23,6 +23,7 @@ class GoalPlanDetailScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
+        surfaceTintColor: Colors.transparent,
         backgroundColor: Colors.transparent,
         title: const Text('Plan Details'),
       ),

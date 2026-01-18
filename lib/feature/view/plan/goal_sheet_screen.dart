@@ -32,12 +32,13 @@ class GoalSheetScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
+        surfaceTintColor: Colors.transparent,
         backgroundColor: Colors.transparent,
         title: const Text('Goal Sheet'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.save),
-            onPressed: () => _savePlan(context),
+            icon:  Icon(Icons.save),
+            onPressed: () => Navigator.pop(context),
             tooltip: 'Save Plan',
           ),
         ],
