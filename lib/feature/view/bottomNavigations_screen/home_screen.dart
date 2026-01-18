@@ -242,12 +242,12 @@ class HomeScreen extends StatelessWidget {
                 width: 40.sp.clamp(36, 48).toDouble(),
                 height: 40.sp.clamp(36, 48).toDouble(),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                  color: AppColors.success.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   Icons.check_circle,
-                  color: const Color(0xFF10B981),
+                  color: AppColors.success,
                   size: 24.sp.clamp(20, 28).toDouble(),
                 ),
               ),

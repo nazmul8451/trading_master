@@ -15,25 +15,26 @@ class GetStartedScreen extends StatelessWidget {
         child: LayoutBuilder(
           builder: (context, constraints) {
             return SingleChildScrollView(
+              padding: EdgeInsets.zero,
               child: ConstrainedBox(
                 constraints: BoxConstraints(
                   minHeight: constraints.maxHeight,
                 ),
                 child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 24.w.clamp(20, 32)),
+                  padding: EdgeInsets.symmetric(horizontal: 24.w.clamp(20, 32).toDouble()),
                   child: IntrinsicHeight(
                     child: Column(
                       children: [
-                        SizedBox(height: 20.h.clamp(16, 24)),
+                        SizedBox(height: 20.h.clamp(16, 24).toDouble()),
                         _buildTopBar(),
-                        SizedBox(height: 40.h.clamp(32, 48)),
+                        SizedBox(height: 32.h.clamp(24, 40).toDouble()),
                         _buildFeatureCard(),
-                        SizedBox(height: 40.h.clamp(32, 48)),
+                        SizedBox(height: 32.h.clamp(24, 40).toDouble()),
                         _buildContent(),
                         const Spacer(),
-                        SizedBox(height: 40.h.clamp(32, 48)),
+                        SizedBox(height: 32.h.clamp(24, 40).toDouble()),
                         _buildActions(context),
-                        SizedBox(height: 20.h.clamp(16, 24)),
+                        SizedBox(height: 20.h.clamp(16, 24).toDouble()),
                       ],
                     ),
                   ),
@@ -50,8 +51,8 @@ class GetStartedScreen extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(Icons.shield_outlined, color: AppColors.textBody, size: 20.sp.clamp(18, 24)),
-        SizedBox(width: 8.w.clamp(6, 12)),
+        Icon(Icons.shield_outlined, color: AppColors.textBody, size: 20.sp.clamp(18, 24).toDouble()),
+        SizedBox(width: 8.w.clamp(6, 12).toDouble()),
         Text(
           "SYSTEM PROTOCOL",
           style: AppTypography.protocolText,
@@ -63,10 +64,10 @@ class GetStartedScreen extends StatelessWidget {
   Widget _buildFeatureCard() {
     return Container(
       width: double.infinity,
-      height: 220.h.clamp(200, 260),
+      height: 200.h.clamp(180, 240).toDouble(),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(24.r.clamp(20, 32)),
+        borderRadius: BorderRadius.circular(24.r.clamp(20, 32).toDouble()),
         border: Border.all(color: AppColors.border, width: 1),
       ),
       child: Center(
@@ -76,24 +77,24 @@ class GetStartedScreen extends StatelessWidget {
             Icon(
               Icons.account_balance_wallet_rounded,
               color: AppColors.primary,
-              size: 80.sp.clamp(70, 100),
+              size: 70.sp.clamp(60, 90).toDouble(),
             ),
-            SizedBox(height: 24.h.clamp(20, 32)),
+            SizedBox(height: 20.h.clamp(16, 28).toDouble()),
             Container(
-              width: 120.w.clamp(100, 140),
-              height: 4.h.clamp(3, 6),
+              width: 110.w.clamp(90, 130).toDouble(),
+              height: 4.h.clamp(3, 6).toDouble(),
               decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.3),
-                borderRadius: BorderRadius.circular(2.r.clamp(1, 4)),
+                color: AppColors.primary.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(2.r.clamp(1, 4).toDouble()),
               ),
             ),
-            SizedBox(height: 12.h.clamp(8, 16)),
+            SizedBox(height: 10.h.clamp(6, 14).toDouble()),
             Container(
-              width: 80.w.clamp(60, 100),
-              height: 4.h.clamp(3, 6),
+              width: 70.w.clamp(50, 90).toDouble(),
+              height: 4.h.clamp(3, 6).toDouble(),
               decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(2.r.clamp(1, 4)),
+                color: AppColors.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(2.r.clamp(1, 4).toDouble()),
               ),
             ),
           ],
@@ -110,13 +111,13 @@ class GetStartedScreen extends StatelessWidget {
           textAlign: TextAlign.center,
           style: AppTypography.heading,
         ),
-        SizedBox(height: 15.h.clamp(12, 20)),
+        SizedBox(height: 12.h.clamp(10, 18).toDouble()),
         Text(
           "Profit is secondary. Discipline is\nprimary.",
           textAlign: TextAlign.center,
           style: AppTypography.subHeading,
         ),
-        SizedBox(height: 20.h.clamp(16, 28)),
+        SizedBox(height: 16.h.clamp(12, 24).toDouble()),
         Text(
           "This system is designed for\ncompounding wealth through strict risk\nmanagement, not chasing market noise.\nControl your emotions, master your\nedge.",
           textAlign: TextAlign.center,
@@ -136,9 +137,9 @@ class GetStartedScreen extends StatelessWidget {
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.primary,
             foregroundColor: AppColors.textMain,
-            minimumSize: Size(double.infinity, 56.h.clamp(48, 64)),
+            minimumSize: Size(double.infinity, 54.h.clamp(46, 60).toDouble()),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16.r.clamp(12, 20)),
+              borderRadius: BorderRadius.circular(16.r.clamp(12, 20).toDouble()),
             ),
             elevation: 0,
           ),
@@ -146,19 +147,19 @@ class GetStartedScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text("Start Discipline Setup", style: AppTypography.buttonText),
-              SizedBox(width: 8.w.clamp(6, 12)),
-              Icon(Icons.arrow_forward, size: 20.sp.clamp(18, 24)),
+              SizedBox(width: 8.w.clamp(6, 12).toDouble()),
+              Icon(Icons.arrow_forward, size: 20.sp.clamp(18, 24).toDouble()),
             ],
           ),
         ),
-        SizedBox(height: 12.h.clamp(8, 16)),
+        SizedBox(height: 12.h.clamp(8, 16).toDouble()),
         OutlinedButton(
           onPressed: () {},
           style: OutlinedButton.styleFrom(
-            minimumSize: Size(double.infinity, 56.h.clamp(48, 64)),
+            minimumSize: Size(double.infinity, 54.h.clamp(46, 60).toDouble()),
             side: const BorderSide(color: AppColors.border),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16.r.clamp(12, 20)),
+              borderRadius: BorderRadius.circular(16.r.clamp(12, 20).toDouble()),
             ),
           ),
           child: Text(

@@ -200,7 +200,7 @@ class _GoalPlansLibraryScreenState extends State<GoalPlansLibraryScreen> {
             children: [
               _buildStatColumn('STARTING CAPITAL', '\$${plan.startCapital.toStringAsFixed(2)}'),
               _buildStatColumn('CURRENT PROGRESS', '${currentProgress.toStringAsFixed(1)}%', 
-                color: const Color(0xFF3B82F6)),
+                color: AppColors.accentBlue),
             ],
           ),
           SizedBox(height: 12.h.clamp(8, 16).toDouble()),

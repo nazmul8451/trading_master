@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_typography.dart';
 import '../../model/plan_model.dart';
 import 'goal_sheet_screen.dart';
 
@@ -47,41 +49,57 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Create Trading Plan'),
+        title: Text(
+          'Create Trading Plan',
+          style: AppTypography.subHeading.copyWith(color: AppColors.textMain),
+        ),
         centerTitle: true,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: AppColors.textMain, size: 24.sp.clamp(20, 28).toDouble()),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: EdgeInsets.all(16.w),
+          padding: EdgeInsets.symmetric(horizontal: 20.w.clamp(16, 24).toDouble()),
           child: Form(
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                SizedBox(height: 20.h.clamp(16, 24).toDouble()),
                 Text(
                   'Plan Your Success',
-                  style: TextStyle(
-                    fontSize: 24.sp,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                  style: AppTypography.heading.copyWith(
+                    fontSize: 24.sp.clamp(20, 28).toDouble(),
                   ),
                   textAlign: TextAlign.center,
                 ),
-                SizedBox(height: 24.h),
+                SizedBox(height: 8.h.clamp(4, 12).toDouble()),
+                Text(
+                  'Define your trading parameters and start compounding your wealth.',
+                  style: AppTypography.body,
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 32.h.clamp(24, 40).toDouble()),
                 _buildTextField(
                   controller: _capitalController,
                   label: 'Starting Capital (\$)',
                   hint: 'e.g., 1000',
                 ),
-                SizedBox(height: 16.h),
+                SizedBox(height: 16.h.clamp(12, 20).toDouble()),
                 _buildTextField(
                   controller: _targetController,
                   label: 'Target Profit (%)',
                   hint: 'e.g., 2',
                 ),
-                SizedBox(height: 16.h),
+                SizedBox(height: 16.h.clamp(12, 20).toDouble()),
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
                       flex: 1,
@@ -92,19 +110,38 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
                         isInteger: true,
                       ),
                     ),
-                    SizedBox(width: 16.w),
+                    SizedBox(width: 16.w.clamp(12, 20).toDouble()),
                     Expanded(
                       flex: 1,
                       child: DropdownButtonFormField<String>(
                         value: _durationType,
-                        dropdownColor: const Color(0xFF1E222D),
+                        dropdownColor: AppColors.surface,
+                        style: AppTypography.buttonText.copyWith(
+                          fontSize: 14.sp.clamp(12, 16).toDouble(),
+                        ),
                         decoration: InputDecoration(
                           labelText: 'Type',
+                          labelStyle: AppTypography.body.copyWith(
+                            fontSize: 12.sp.clamp(10, 14).toDouble(),
+                          ),
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12.r),
+                            borderRadius: BorderRadius.circular(12.r.clamp(8, 16).toDouble()),
+                            borderSide: const BorderSide(color: AppColors.border),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12.r.clamp(8, 16).toDouble()),
+                            borderSide: const BorderSide(color: AppColors.border),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12.r.clamp(8, 16).toDouble()),
+                            borderSide: const BorderSide(color: AppColors.primary, width: 2),
                           ),
                           filled: true,
-                          fillColor: const Color(0xFF1E222D),
+                          fillColor: AppColors.surface,
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: 16.w.clamp(12, 20).toDouble(),
+                            vertical: 16.h.clamp(12, 20).toDouble(),
+                          ),
                         ),
                         items: ['Days', 'Weeks', 'Months']
                             .map((e) => DropdownMenuItem(value: e, child: Text(e)))
@@ -114,21 +151,24 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
                     ),
                   ],
                 ),
-                SizedBox(height: 32.h),
+                SizedBox(height: 48.h.clamp(32, 64).toDouble()),
                 ElevatedButton(
                   onPressed: _calculateAndNavigate,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2369FF),
-                    padding: EdgeInsets.symmetric(vertical: 12.h),
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: AppColors.textMain,
+                    minimumSize: Size(double.infinity, 54.h.clamp(46, 60).toDouble()),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.r),
+                      borderRadius: BorderRadius.circular(12.r.clamp(8, 16).toDouble()),
                     ),
+                    elevation: 0,
                   ),
                   child: Text(
                     'Create Plan',
-                    style: TextStyle(fontSize: 18.sp, color: Colors.white),
+                    style: AppTypography.buttonText,
                   ),
                 ),
+                SizedBox(height: 20.h.clamp(16, 24).toDouble()),
               ],
             ),
           ),
@@ -145,6 +185,9 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
   }) {
     return TextFormField(
       controller: controller,
+      style: AppTypography.buttonText.copyWith(
+        fontSize: 14.sp.clamp(12, 16).toDouble(),
+      ),
       keyboardType:
           TextInputType.numberWithOptions(decimal: !isInteger),
       validator: (value) {
@@ -154,12 +197,32 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
       },
       decoration: InputDecoration(
         labelText: label,
+        labelStyle: AppTypography.body.copyWith(
+          fontSize: 12.sp.clamp(10, 14).toDouble(),
+        ),
         hintText: hint,
+        hintStyle: AppTypography.body.copyWith(
+          fontSize: 14.sp.clamp(12, 16).toDouble(),
+          color: AppColors.textBody.withValues(alpha: 0.5),
+        ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12.r),
+          borderRadius: BorderRadius.circular(12.r.clamp(8, 16).toDouble()),
+          borderSide: const BorderSide(color: AppColors.border),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12.r.clamp(8, 16).toDouble()),
+          borderSide: const BorderSide(color: AppColors.border),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12.r.clamp(8, 16).toDouble()),
+          borderSide: const BorderSide(color: AppColors.primary, width: 2),
         ),
         filled: true,
-        fillColor: const Color(0xFF1E222D),
+        fillColor: AppColors.surface,
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: 16.w.clamp(12, 20).toDouble(),
+          vertical: 16.h.clamp(12, 20).toDouble(),
+        ),
       ),
     );
   }

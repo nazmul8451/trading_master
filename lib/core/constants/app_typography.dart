@@ -24,6 +24,20 @@ class AppTypography {
         height: 1.6,
       );
 
+  static TextStyle get bodySmall => TextStyle(
+        fontSize: 12.sp.clamp(10, 14).toDouble(),
+        fontWeight: FontWeight.normal,
+        color: AppColors.textBody,
+        height: 1.4,
+      );
+
+  static TextStyle get label => TextStyle(
+        fontSize: 12.sp.clamp(10, 14).toDouble(),
+        fontWeight: FontWeight.w600,
+        color: AppColors.textBody,
+        letterSpacing: 0.5,
+      );
+
   static TextStyle get buttonText => TextStyle(
         fontSize: 16.sp.clamp(14, 18).toDouble(),
         fontWeight: FontWeight.w600,

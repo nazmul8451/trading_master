@@ -126,7 +126,7 @@ class GoalPlanDetailScreen extends StatelessWidget {
                 child: _buildStatColumn(
                   'TARGET GOAL',
                   '\$${finalBalance.toStringAsFixed(2)}',
-                  color: const Color(0xFF3B82F6),
+                  color: AppColors.accentBlue,
                 ),
               ),
             ],
@@ -138,14 +138,14 @@ class GoalPlanDetailScreen extends StatelessWidget {
                 child: _buildStatColumn(
                   'TOTAL GAIN',
                   '\$${(finalBalance - plan.startCapital).toStringAsFixed(2)}',
-                  color: const Color(0xFF10B981),
+                  color: AppColors.success,
                 ),
               ),
               Expanded(
                 child: _buildStatColumn(
                   'GAIN %',
                   '${totalGainPercent.toStringAsFixed(1)}%',
-                  color: const Color(0xFF10B981),
+                  color: AppColors.success,
                 ),
               ),
             ],
@@ -289,7 +289,7 @@ class GoalPlanDetailScreen extends StatelessWidget {
                     _buildDetailRow(
                       'Target Profit (${plan.targetPercent}%)',
                       '+\$${profit.toStringAsFixed(2)}',
-                      valueColor: const Color(0xFF10B981),
+                      valueColor: AppColors.success,
                     ),
                     SizedBox(height: 8.h.clamp(6, 10).toDouble()),
                     Divider(
