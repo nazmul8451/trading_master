@@ -32,6 +32,7 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
         targetPercent: double.parse(_targetController.text),
         duration: int.parse(_durationController.text),
         durationType: _durationType,
+        startDate: DateTime.now(),
       );
 
       Navigator.push(
@@ -83,7 +84,7 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
                 Row(
                   children: [
                     Expanded(
-                      flex: 2,
+                      flex: 1,
                       child: _buildTextField(
                         controller: _durationController,
                         label: 'Duration',
@@ -118,7 +119,7 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
                   onPressed: _calculateAndNavigate,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF2369FF),
-                    padding: EdgeInsets.symmetric(vertical: 16.h),
+                    padding: EdgeInsets.symmetric(vertical: 12.h),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12.r),
                     ),

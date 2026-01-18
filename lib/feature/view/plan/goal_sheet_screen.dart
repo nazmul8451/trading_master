@@ -15,7 +15,9 @@ class GoalSheetScreen extends StatelessWidget {
     final totalProfit = finalBalance - plan.startCapital;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Goal Sheet')),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        title: const Text('Goal Sheet')),
       body: Column(
         children: [
           _buildSummaryCard(finalBalance, totalProfit),
@@ -145,7 +147,17 @@ class GoalSheetScreen extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Target', style: TextStyle(color: Colors.white60, fontSize: 12.sp)),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Target', style: TextStyle(color: Colors.white60, fontSize: 12.sp)),
+                        SizedBox(height: 4.h),
+                        Text(
+                          _formatDate(entry.date),
+                          style: TextStyle(color: Colors.white30, fontSize: 10.sp),
+                        ),
+                      ],
+                    ),
                     Flexible(
                       child: Text(
                         '+\$${entry.targetProfit.toStringAsFixed(2)}',
@@ -178,5 +190,12 @@ class GoalSheetScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+  String _formatDate(DateTime date) {
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    return '${date.day} ${months[date.month - 1]} ${date.year}';
   }
 }

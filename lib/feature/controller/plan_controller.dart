@@ -9,8 +9,18 @@ class PlanController {
       double profit = currentBalance * (plan.targetPercent / 100);
       double endBalance = currentBalance + profit;
 
+      DateTime date;
+      if (plan.durationType == 'Weeks') {
+        date = plan.startDate.add(Duration(days: (i - 1) * 7));
+      } else if (plan.durationType == 'Months') {
+        date = plan.startDate.add(Duration(days: (i - 1) * 30));
+      } else {
+        date = plan.startDate.add(Duration(days: i - 1));
+      }
+
       entries.add(PlanEntry(
         day: i,
+        date: date,
         startBalance: currentBalance,
         targetProfit: profit,
         endBalance: endBalance,
