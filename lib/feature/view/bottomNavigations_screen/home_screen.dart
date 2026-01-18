@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_typography.dart';
+import '../plan/goal_plans_library_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -23,7 +24,7 @@ class HomeScreen extends StatelessWidget {
               SizedBox(height: 24.h.clamp(20, 32).toDouble()),
               _buildDisciplineStatus(),
               SizedBox(height: 24.h.clamp(20, 32).toDouble()),
-              _buildQuickActions(),
+              _buildQuickActions(context),
               SizedBox(height: 24.h.clamp(20, 32).toDouble()),
               _buildCompoundingCurve(),
               SizedBox(height: 24.h.clamp(20, 32).toDouble()),
@@ -285,7 +286,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildQuickActions() {
+  Widget _buildQuickActions(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -309,21 +310,30 @@ class HomeScreen extends StatelessWidget {
               icon: Icons.add_chart,
               label: "Add Trade",
               color: const Color(0xFF3B82F6),
+              onTap: () {},
             ),
             _buildActionCard(
               icon: Icons.track_changes,
               label: "Goal Plan",
               color: const Color(0xFF8B5CF6),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => GoalPlansLibraryScreen()),
+                );
+              },
             ),
             _buildActionCard(
               icon: Icons.menu_book,
               label: "Journal",
               color: const Color(0xFFF59E0B),
+              onTap: () {},
             ),
             _buildActionCard(
               icon: Icons.analytics,
               label: "Analytics",
               color: const Color(0xFFEF4444),
+              onTap: () {},
             ),
           ],
         ),
@@ -335,6 +345,7 @@ class HomeScreen extends StatelessWidget {
     required IconData icon,
     required String label,
     required Color color,
+    required VoidCallback onTap,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -345,7 +356,7 @@ class HomeScreen extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () {},
+          onTap: onTap,
           borderRadius: BorderRadius.circular(16.r.clamp(12, 20).toDouble()),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -453,7 +464,6 @@ class _CompoundingCurvePainter extends CustomPainter {
     final path = Path();
     final linePath = Path();
 
-    // Create a simple exponential curve
     path.moveTo(0, size.height);
     linePath.moveTo(0, size.height * 0.7);
 
@@ -476,7 +486,6 @@ class _CompoundingCurvePainter extends CustomPainter {
     canvas.drawPath(path, paint);
     canvas.drawPath(linePath, linePaint);
 
-    // Draw vertical grid lines
     final gridPaint = Paint()
       ..color = AppColors.border
       ..style = PaintingStyle.stroke

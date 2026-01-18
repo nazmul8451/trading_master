@@ -2,11 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../model/plan_model.dart';
 import '../../controller/plan_controller.dart';
+import '../../service/plan_storage_service.dart';
 
 class GoalSheetScreen extends StatelessWidget {
   final PlanModel plan;
 
   const GoalSheetScreen({super.key, required this.plan});
+
+  void _savePlan(BuildContext context) async {
+    final storage = PlanStorageService();
+    await storage.savePlan(plan);
+    
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Plan saved successfully!'),
+          backgroundColor: Color(0xFF10B981),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +33,15 @@ class GoalSheetScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        title: const Text('Goal Sheet')),
+        title: const Text('Goal Sheet'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.save),
+            onPressed: () => _savePlan(context),
+            tooltip: 'Save Plan',
+          ),
+        ],
+      ),
       body: Column(
         children: [
           _buildSummaryCard(finalBalance, totalProfit),

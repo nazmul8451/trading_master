@@ -12,6 +12,26 @@ class PlanModel {
     required this.durationType,
     required this.startDate,
   });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'startCapital': startCapital,
+      'targetPercent': targetPercent,
+      'duration': duration,
+      'durationType': durationType,
+      'startDate': startDate.toIso8601String(),
+    };
+  }
+
+  factory PlanModel.fromJson(Map<String, dynamic> json) {
+    return PlanModel(
+      startCapital: json['startCapital'],
+      targetPercent: json['targetPercent'],
+      duration: json['duration'],
+      durationType: json['durationType'],
+      startDate: DateTime.parse(json['startDate']),
+    );
+  }
 }
 
 class PlanEntry {
