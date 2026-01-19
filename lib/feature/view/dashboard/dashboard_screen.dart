@@ -67,6 +67,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF1E222D), // Side menu background
+      resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
           const SideMenu(),

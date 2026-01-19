@@ -52,17 +52,7 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text(
-          'Create Trading Plan',
-          style: AppTypography.subHeading.copyWith(color: AppColors.textMain),
-        ),
-        centerTitle: true,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: AppColors.textMain, size: 24.sp.clamp(20, 28).toDouble()),
-          onPressed: () => Navigator.pop(context),
-        ),
+        title: const Text('Create Trading Plan'),
       ),
       body: SingleChildScrollView(
         child: Padding(
