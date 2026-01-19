@@ -1,22 +1,52 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'dart:math';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_typography.dart';
 import '../bottomNavigations_screen/home_screen.dart';
-
 import '../bottomNavigations_screen/plane.dart';
+import 'widgets/side_menu.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({Key? key}) : super(key: key);
+
+  static _DashboardScreenState? of(BuildContext context) =>
+      context.findAncestorStateOfType<_DashboardScreenState>();
 
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
 }
 
-class _DashboardScreenState extends State<DashboardScreen> {
+class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProviderStateMixin {
   int _selectedIndex = 0;
+  bool _isDrawerOpen = false;
+  late AnimationController _animationController;
 
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+  }
 
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  void toggleDrawer() {
+    setState(() {
+      _isDrawerOpen = !_isDrawerOpen;
+      if (_isDrawerOpen) {
+        _animationController.forward();
+      } else {
+        _animationController.reverse();
+      }
+    });
+  }
 
   final List<Widget> _screens = [
     const HomeScreen(),
@@ -27,6 +57,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   ];
 
   void _onItemTapped(int index) {
+    if (_isDrawerOpen) toggleDrawer();
     setState(() {
       _selectedIndex = index;
     });
@@ -34,14 +65,45 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        backgroundColor: AppColors.background,
-        body: IndexedStack(
-          index: _selectedIndex,
-          children: _screens,
-        ),
-        bottomNavigationBar: _buildBottomBar(),
+    return Scaffold(
+      backgroundColor: const Color(0xFF1E222D), // Side menu background
+      body: Stack(
+        children: [
+          const SideMenu(),
+          AnimatedBuilder(
+            animation: _animationController,
+            builder: (context, child) {
+              double slide = 250.w * _animationController.value;
+              double scale = 1.0 - (_animationController.value * 0.15);
+              double radius = _animationController.value * 32.r;
+
+              return Transform(
+                transform: Matrix4.identity()
+                  ..translate(slide)
+                  ..scale(scale),
+                alignment: Alignment.centerLeft,
+                child: GestureDetector(
+                  onTap: _isDrawerOpen ? toggleDrawer : null,
+                  behavior: HitTestBehavior.opaque,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(radius),
+                    child: AbsorbPointer(
+                      absorbing: _isDrawerOpen,
+                      child: Scaffold(
+                        backgroundColor: AppColors.background,
+                        body: IndexedStack(
+                          index: _selectedIndex,
+                          children: _screens,
+                        ),
+                        bottomNavigationBar: _buildBottomBar(),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
       ),
     );
   }
@@ -142,3 +204,4 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 }
+

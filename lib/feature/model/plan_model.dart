@@ -25,7 +25,7 @@ class PlanModel {
       'duration': duration,
       'durationType': durationType,
       'startDate': startDate.toIso8601String(),
-      'dailyStatuses': dailyStatuses,
+      'dailyStatuses': dailyStatuses.map((key, value) => MapEntry(key.toString(), value)),
     };
   }
 

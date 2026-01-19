@@ -227,13 +227,14 @@ class _GoalPlansLibraryScreenState extends State<GoalPlansLibraryScreen> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () {
-                Navigator.push(
+              onPressed: () async {
+                await Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => GoalPlanDetailScreen(plan: plan),
                   ),
                 );
+                _loadPlans();
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,

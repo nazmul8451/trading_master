@@ -62,85 +62,197 @@ class _GoalPlanDetailScreenState extends State<GoalPlanDetailScreen> {
   Widget _buildFeedbackDialog(String status, int day) {
     final isHit = status == 'hit';
     final dailyTarget = _entries[day - 1].targetProfit;
+    final color = isHit ? AppColors.success : AppColors.accentBlue;
 
     return Dialog(
       backgroundColor: Colors.transparent,
       insetPadding: EdgeInsets.symmetric(horizontal: 24.w),
-      child: Container(
-        padding: EdgeInsets.all(24.r),
-        decoration: BoxDecoration(
-          color: const Color(0xFF1E222D),
-          borderRadius: BorderRadius.circular(24.r),
-          border: Border.all(color: isHit ? AppColors.success.withOpacity(0.3) : AppColors.accentBlue.withOpacity(0.3)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: EdgeInsets.all(20.r),
+      child: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.topCenter,
+        children: [
+          Container(
+            padding: EdgeInsets.fromLTRB(24.r, 64.r, 24.r, 24.r),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  const Color(0xFF1E222D),
+                  const Color(0xFF161922),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(28.r),
+              border: Border.all(
+                color: color.withOpacity(0.2),
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.5),
+                  blurRadius: 30,
+                  offset: const Offset(0, 15),
+                ),
+                BoxShadow(
+                  color: color.withOpacity(0.1),
+                  blurRadius: 40,
+                  spreadRadius: -10,
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  isHit ? 'Congratulations!' : 'Stay Disciplined!',
+                  style: AppTypography.heading.copyWith(
+                    fontSize: 26.sp,
+                    letterSpacing: -0.5,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 12.h),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        color.withOpacity(0.2),
+                        color.withOpacity(0.05),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(100.r),
+                    border: Border.all(color: color.withOpacity(0.3)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        isHit ? Icons.stars : Icons.security,
+                        color: color,
+                        size: 14.sp,
+                      ),
+                      SizedBox(width: 8.w),
+                      Text(
+                        isHit ? 'DAILY SUCCESS' : 'DISCIPLINE MAINTAINED',
+                        style: AppTypography.body.copyWith(
+                          color: color,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 10.sp,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 24.h),
+                Text(
+                  isHit 
+                    ? 'Amazing work! You\'ve successfully hit your target of \$${dailyTarget.toStringAsFixed(2)} for today.'
+                    : 'A stop loss is simply a business cost in trading. By taking it, you\'ve shown true maturity and discipline.',
+                  style: AppTypography.body.copyWith(
+                    color: AppColors.textBody,
+                    fontSize: 15.sp,
+                    height: 1.5,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 32.h),
+                Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16.r),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.white.withOpacity(0.1),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                    gradient: const LinearGradient(
+                      colors: [Colors.white, Color(0xFFE0E0E0)],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
+                  ),
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      foregroundColor: Colors.black,
+                      shadowColor: Colors.transparent,
+                      minimumSize: Size(double.infinity, 56.h),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+                      elevation: 0,
+                    ),
+                    child: Text(
+                      'Continue',
+                      style: AppTypography.buttonText.copyWith(
+                        color: Colors.black,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16.sp,
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 12.h),
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context); // Close dialog
+                    Navigator.pop(context); // Return to Library
+                  },
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.symmetric(vertical: 12.h),
+                  ),
+                  child: Text(
+                    'Return to Dashboard',
+                    style: AppTypography.body.copyWith(
+                      color: AppColors.textBody.withOpacity(0.7),
+                      fontSize: 14.sp,
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Positioned(
+            top: -42.r,
+            child: Container(
+              padding: EdgeInsets.all(4.r),
               decoration: BoxDecoration(
-                color: (isHit ? AppColors.primary : AppColors.accentBlue).withOpacity(0.1),
+                color: const Color(0xFF1E222D),
                 shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: color.withOpacity(0.3),
+                    blurRadius: 20,
+                    spreadRadius: 5,
+                  ),
+                ],
               ),
-              child: Icon(
-                isHit ? Icons.emoji_events : Icons.security,
-                color: isHit ? AppColors.primary : AppColors.accentBlue,
-                size: 64.sp,
-              ),
-            ),
-            SizedBox(height: 24.h),
-            Text(
-              isHit ? 'Congratulations!' : 'Stay Disciplined!',
-              style: AppTypography.heading.copyWith(fontSize: 24.sp),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 12.h),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-              decoration: BoxDecoration(
-                color: (isHit ? AppColors.success : AppColors.accentBlue).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(20.r),
-              ),
-              child: Text(
-                isHit ? 'DAILY SUCCESS' : 'DISCIPLINE MAINTAINED',
-                style: AppTypography.body.copyWith(
-                  color: isHit ? AppColors.success : AppColors.accentBlue,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12.sp,
+              child: Container(
+                padding: EdgeInsets.all(24.r),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      color,
+                      color.withOpacity(0.7),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  isHit ? Icons.emoji_events : Icons.shield,
+                  color: Colors.white,
+                  size: 48.sp,
                 ),
               ),
             ),
-            SizedBox(height: 24.h),
-            Text(
-              isHit 
-                ? 'Daily Target of \$${dailyTarget.toStringAsFixed(2)} achieved.'
-                : 'Taking a Stop Loss is part of the plan. You stay disciplined.',
-              style: AppTypography.body.copyWith(color: AppColors.textBody),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 32.h),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(context),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: Colors.black,
-                minimumSize: Size(double.infinity, 54.h),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
-              ),
-              child: Text('Close', style: AppTypography.buttonText.copyWith(color: Colors.black)),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                Navigator.pop(context);
-              },
-              child: Text(
-                'Return to Dashboard',
-                style: AppTypography.body.copyWith(color: AppColors.textBody),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

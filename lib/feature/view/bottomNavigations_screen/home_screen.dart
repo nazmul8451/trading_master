@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_typography.dart';
 import '../plan/goal_plans_library_screen.dart';
+import '../dashboard/dashboard_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -18,7 +19,7 @@ class HomeScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(height: 16.h.clamp(12, 20).toDouble()),
-              _buildHeader(),
+              _buildHeader(context),
               SizedBox(height: 24.h.clamp(20, 32).toDouble()),
               _buildBalanceCard(),
               SizedBox(height: 24.h.clamp(20, 32).toDouble()),
@@ -35,26 +36,29 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     return Row(
       children: [
-        Container(
-          width: 48.sp.clamp(40, 56).toDouble(),
-          height: 48.sp.clamp(40, 56).toDouble(),
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: LinearGradient(
-              colors: [AppColors.primary, AppColors.primary.withValues(alpha: 0.6)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+        GestureDetector(
+          onTap: () => DashboardScreen.of(context)?.toggleDrawer(),
+          child: Container(
+            width: 48.sp.clamp(40, 56).toDouble(),
+            height: 48.sp.clamp(40, 56).toDouble(),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                colors: [AppColors.primary, AppColors.primary.withValues(alpha: 0.6)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
             ),
-          ),
-          child: Center(
-            child: Text(
-              "AS",
-              style: AppTypography.buttonText.copyWith(
-                fontSize: 18.sp.clamp(16, 22).toDouble(),
-                fontWeight: FontWeight.bold,
+            child: Center(
+              child: Text(
+                "AS",
+                style: AppTypography.buttonText.copyWith(
+                  fontSize: 18.sp.clamp(16, 22).toDouble(),
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ),
