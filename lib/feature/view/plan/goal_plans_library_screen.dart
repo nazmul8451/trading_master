@@ -198,7 +198,7 @@ class _GoalPlansLibraryScreenState extends State<GoalPlansLibraryScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildStatColumn('STARTING CAPITAL', '\$${plan.startCapital.toStringAsFixed(2)}'),
+              _buildStatColumn('STARTING CAPITAL', '${plan.currency}${plan.startCapital.toStringAsFixed(2)}'),
               _buildStatColumn('CURRENT PROGRESS', '${currentProgress.toStringAsFixed(1)}%', 
                 color: AppColors.accentBlue),
             ],
@@ -215,7 +215,7 @@ class _GoalPlansLibraryScreenState extends State<GoalPlansLibraryScreen> {
                 ),
               ),
               Text(
-                'Goal: \$${finalBalance.toStringAsFixed(2)}',
+                'Goal: ${plan.currency}${finalBalance.toStringAsFixed(2)}',
                 style: AppTypography.body.copyWith(
                   fontSize: 12.sp.clamp(10, 14).toDouble(),
                   color: AppColors.textBody,

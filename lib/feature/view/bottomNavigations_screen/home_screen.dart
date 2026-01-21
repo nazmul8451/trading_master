@@ -47,7 +47,7 @@ class HomeScreen extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               gradient: LinearGradient(
-                colors: [AppColors.primary, AppColors.primary.withValues(alpha: 0.6)],
+                colors: [AppColors.primary, AppColors.primary.withOpacity(0.6)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -131,7 +131,7 @@ class HomeScreen extends StatelessWidget {
                   vertical: 4.h.clamp(2, 6).toDouble(),
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.15),
+                  color: AppColors.primary.withOpacity(0.15),
                   borderRadius: BorderRadius.circular(6.r.clamp(4, 8).toDouble()),
                 ),
                 child: Text(
@@ -246,7 +246,7 @@ class HomeScreen extends StatelessWidget {
                 width: 40.sp.clamp(36, 48).toDouble(),
                 height: 40.sp.clamp(36, 48).toDouble(),
                 decoration: BoxDecoration(
-                  color: AppColors.success.withValues(alpha: 0.15),
+                  color: AppColors.success.withOpacity(0.15),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
@@ -369,7 +369,7 @@ class HomeScreen extends StatelessWidget {
                 width: 48.sp.clamp(40, 56).toDouble(),
                 height: 48.sp.clamp(40, 56).toDouble(),
                 decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.15),
+                  color: color.withOpacity(0.15),
                   borderRadius: BorderRadius.circular(12.r.clamp(8, 16).toDouble()),
                 ),
                 child: Icon(
@@ -457,7 +457,7 @@ class _CompoundingCurvePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color(0xFF3B82F6).withValues(alpha: 0.3)
+      ..color = const Color(0xFF3B82F6).withOpacity(0.3)
       ..style = PaintingStyle.fill;
 
     final linePaint = Paint()

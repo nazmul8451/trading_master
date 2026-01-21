@@ -21,31 +21,39 @@ class SideMenu extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildProfileSection(),
-              SizedBox(height: 40.h),
-              Padding(
-                padding: EdgeInsets.only(left: 24.w),
-                child: Column(
-                  children: [
-                    _buildDrawerItem(context, Icons.home_outlined, "Dashboard", true),
-                    _buildDrawerItem(context, Icons.bar_chart_outlined, "Analytics", false),
-                    _buildDrawerItem(context, Icons.people_outline, "Contacts", false),
-                  ],
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildProfileSection(),
+                      SizedBox(height: 40.h),
+                      Padding(
+                        padding: EdgeInsets.only(left: 24.w),
+                        child: Column(
+                          children: [
+                            _buildDrawerItem(context, Icons.home_outlined, "Dashboard", true),
+                            _buildDrawerItem(context, Icons.bar_chart_outlined, "Analytics", false),
+                            _buildDrawerItem(context, Icons.people_outline, "Contacts", false),
+                          ],
+                        ),
+                      ),
+                      const Divider(color: Colors.white10, height: 60),
+                      Padding(
+                        padding: EdgeInsets.only(left: 24.w),
+                        child: Column(
+                          children: [
+                            _buildDrawerItem(context, Icons.settings_outlined, "Settings", false),
+                            _buildDrawerItem(context, Icons.headset_mic_outlined, "Support", false),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-              const Divider(color: Colors.white10, height: 60),
               Padding(
-                padding: EdgeInsets.only(left: 24.w),
-                child: Column(
-                  children: [
-                    _buildDrawerItem(context, Icons.settings_outlined, "Settings", false),
-                    _buildDrawerItem(context, Icons.headset_mic_outlined, "Support", false),
-                  ],
-                ),
-              ),
-              const Spacer(),
-              Padding(
-                padding: EdgeInsets.only(left: 24.w, bottom: 24.h),
+                padding: EdgeInsets.only(left: 24.w, bottom: 24.h, top: 16.h),
                 child: Text(
                   "Version 1.0.0",
                   style: AppTypography.body.copyWith(

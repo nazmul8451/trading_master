@@ -39,6 +39,7 @@ class _GoalPlanDetailScreenState extends State<GoalPlanDetailScreen> {
       targetPercent: _currentPlan.targetPercent,
       duration: _currentPlan.duration,
       durationType: _currentPlan.durationType,
+      currency: _currentPlan.currency,
       startDate: _currentPlan.startDate,
       dailyStatuses: updatedStatuses,
     );
@@ -148,7 +149,7 @@ class _GoalPlanDetailScreenState extends State<GoalPlanDetailScreen> {
                 SizedBox(height: 24.h),
                 Text(
                   isHit 
-                    ? 'Amazing work! You\'ve successfully hit your target of \$${dailyTarget.toStringAsFixed(2)} for today.'
+                    ? 'Amazing work! You\'ve successfully hit your target of ${_currentPlan.currency}${dailyTarget.toStringAsFixed(2)} for today.'
                     : 'A stop loss is simply a business cost in trading. By taking it, you\'ve shown true maturity and discipline.',
                   style: AppTypography.body.copyWith(
                     color: AppColors.textBody,
@@ -353,9 +354,9 @@ class _GoalPlanDetailScreenState extends State<GoalPlanDetailScreen> {
           SizedBox(height: 20.h),
           Row(
             children: [
-              _buildTargetStat("Target", "+\$${entry.targetProfit.toStringAsFixed(2)}", AppColors.success),
+              _buildTargetStat("Target", "+${_currentPlan.currency}${entry.targetProfit.toStringAsFixed(2)}", AppColors.success),
               SizedBox(width: 20.w),
-              _buildTargetStat("End Balance", "\$${entry.endBalance.toStringAsFixed(2)}", Colors.white),
+              _buildTargetStat("End Balance", "${_currentPlan.currency}${entry.endBalance.toStringAsFixed(2)}", Colors.white),
             ],
           ),
           SizedBox(height: 24.h),
@@ -486,13 +487,13 @@ class _GoalPlanDetailScreenState extends State<GoalPlanDetailScreen> {
               Expanded(
                 child: _buildStatColumn(
                   'STARTING CAPITAL',
-                  '\$${_currentPlan.startCapital.toStringAsFixed(2)}',
+                  '${_currentPlan.currency}${_currentPlan.startCapital.toStringAsFixed(2)}',
                 ),
               ),
               Expanded(
                 child: _buildStatColumn(
                   'TARGET GOAL',
-                  '\$${finalBalance.toStringAsFixed(2)}',
+                  '${_currentPlan.currency}${finalBalance.toStringAsFixed(2)}',
                   color: AppColors.accentBlue,
                 ),
               ),
@@ -504,7 +505,7 @@ class _GoalPlanDetailScreenState extends State<GoalPlanDetailScreen> {
               Expanded(
                 child: _buildStatColumn(
                   'TOTAL GAIN',
-                  '\$${(finalBalance - _currentPlan.startCapital).toStringAsFixed(2)}',
+                  '${_currentPlan.currency}${(finalBalance - _currentPlan.startCapital).toStringAsFixed(2)}',
                   color: AppColors.success,
                 ),
               ),
@@ -656,12 +657,12 @@ class _GoalPlanDetailScreenState extends State<GoalPlanDetailScreen> {
                   children: [
                     _buildDetailRow(
                       'Start Balance',
-                      '\$${entry.startBalance.toStringAsFixed(2)}',
+                      '${_currentPlan.currency}${entry.startBalance.toStringAsFixed(2)}',
                     ),
                     SizedBox(height: 8.h.clamp(6, 10).toDouble()),
                     _buildDetailRow(
                       'Target Profit (${_currentPlan.targetPercent}%)',
-                      '+\$${profit.toStringAsFixed(2)}',
+                      '+${_currentPlan.currency}${profit.toStringAsFixed(2)}',
                       valueColor: AppColors.success,
                     ),
                     SizedBox(height: 8.h.clamp(6, 10).toDouble()),
@@ -672,7 +673,7 @@ class _GoalPlanDetailScreenState extends State<GoalPlanDetailScreen> {
                     SizedBox(height: 8.h.clamp(6, 10).toDouble()),
                     _buildDetailRow(
                       'End Balance',
-                      '\$${entry.endBalance.toStringAsFixed(2)}',
+                      '${_currentPlan.currency}${entry.endBalance.toStringAsFixed(2)}',
                       isBold: true,
                       valueColor: isLast ? AppColors.primary : null,
                     ),

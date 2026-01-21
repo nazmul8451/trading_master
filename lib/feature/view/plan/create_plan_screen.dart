@@ -18,6 +18,8 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
   final _targetController = TextEditingController();
   final _durationController = TextEditingController();
   String _durationType = 'Days';
+  String _selectedCurrency = '\$';
+  final List<String> _currencies = ['\$', '৳', '€', '£', '¥', '₹'];
 
   @override
   void dispose() {
@@ -35,6 +37,7 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
         targetPercent: double.parse(_targetController.text),
         duration: int.parse(_durationController.text),
         durationType: _durationType,
+        currency: _selectedCurrency,
         startDate: DateTime.now(),
       );
 
@@ -89,8 +92,38 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
                 SizedBox(height: 32.h.clamp(24, 40).toDouble()),
                 _buildTextField(
                   controller: _capitalController,
-                  label: 'Starting Capital (\$)',
+                  label: 'Starting Capital',
                   hint: 'e.g., 1000',
+                  prefixIcon: Container(
+                    margin: EdgeInsets.only(right: 8.w),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        value: _selectedCurrency,
+                        dropdownColor: AppColors.surface,
+                        padding: EdgeInsets.zero,
+                        icon: Icon(Icons.keyboard_arrow_down, size: 16.sp, color: AppColors.textBody),
+                        items: _currencies.map((String currency) {
+                          return DropdownMenuItem<String>(
+                            value: currency,
+                            child: Text(
+                              currency,
+                              style: AppTypography.buttonText.copyWith(
+                                fontSize: 14.sp,
+                                color: AppColors.textMain,
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                        onChanged: (String? newValue) {
+                          if (newValue != null) {
+                            setState(() {
+                              _selectedCurrency = newValue;
+                            });
+                          }
+                        },
+                      ),
+                    ),
+                  ),
                 ),
                 SizedBox(height: 16.h.clamp(12, 20).toDouble()),
                 _buildTextField(
@@ -183,6 +216,7 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
     required String label,
     required String hint,
     bool isInteger = false,
+    Widget? prefixIcon,
   }) {
     return TextFormField(
       controller: controller,
@@ -206,6 +240,13 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
           fontSize: 14.sp.clamp(12, 16).toDouble(),
           color: AppColors.textBody.withValues(alpha: 0.5),
         ),
+        prefixIcon: prefixIcon != null
+            ? Padding(
+                padding: EdgeInsets.symmetric(horizontal: 12.w),
+                child: prefixIcon,
+              )
+            : null,
+        prefixIconConstraints: BoxConstraints(minWidth: 0, minHeight: 0),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r.clamp(8, 16).toDouble()),
           borderSide: const BorderSide(color: AppColors.border),

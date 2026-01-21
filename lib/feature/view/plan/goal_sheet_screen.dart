@@ -81,7 +81,7 @@ class GoalSheetScreen extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded(child: _buildStat('Start Capital', '\$${plan.startCapital.toStringAsFixed(2)}')),
+              Expanded(child: _buildStat('Start Capital', '${plan.currency}${plan.startCapital.toStringAsFixed(2)}')),
               Expanded(child: _buildStat('Target ${plan.durationType}', '${plan.targetPercent}%', crossAxisAlignment: CrossAxisAlignment.end)),
             ],
           ),
@@ -95,7 +95,7 @@ class GoalSheetScreen extends StatelessWidget {
               Expanded(
                 child: _buildStat(
                   'Projected Final',
-                  '\$${finalBalance.toStringAsFixed(2)}',
+                  '${plan.currency}${finalBalance.toStringAsFixed(2)}',
                   color: const Color(0xFF00E676),
                   isLarge: true,
                   crossAxisAlignment: CrossAxisAlignment.end,
@@ -185,11 +185,12 @@ class GoalSheetScreen extends StatelessWidget {
                     ),
                     Flexible(
                       child: Text(
-                        '+\$${entry.targetProfit.toStringAsFixed(2)}',
+                        '+${plan.currency}${entry.targetProfit.toStringAsFixed(2)}',
                         style: TextStyle(
-                            color: const Color(0xFF00E676),
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14.sp),
+                          color: const Color(0xFF00E676),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14.sp,
+                        ),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -202,7 +203,7 @@ class GoalSheetScreen extends StatelessWidget {
                     Text('Balance', style: TextStyle(color: Colors.white60, fontSize: 12.sp)),
                     Flexible(
                       child: Text(
-                        '\$${entry.endBalance.toStringAsFixed(2)}',
+                        '${plan.currency}${entry.endBalance.toStringAsFixed(2)}',
                         style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14.sp),
                         overflow: TextOverflow.ellipsis,
                       ),

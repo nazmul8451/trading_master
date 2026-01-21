@@ -4,6 +4,7 @@ class PlanModel {
   final double targetPercent;
   final int duration;
   final String durationType; // 'Days', 'Weeks', 'Months'
+  final String currency;
   final DateTime startDate;
   final Map<int, String> dailyStatuses; // Day -> 'hit' | 'sl'
 
@@ -13,6 +14,7 @@ class PlanModel {
     required this.targetPercent,
     required this.duration,
     required this.durationType,
+    required this.currency,
     required this.startDate,
     this.dailyStatuses = const {},
   });
@@ -24,6 +26,7 @@ class PlanModel {
       'targetPercent': targetPercent,
       'duration': duration,
       'durationType': durationType,
+      'currency': currency,
       'startDate': startDate.toIso8601String(),
       'dailyStatuses': dailyStatuses.map((key, value) => MapEntry(key.toString(), value)),
     };
@@ -36,6 +39,7 @@ class PlanModel {
       targetPercent: (json['targetPercent'] as num).toDouble(),
       duration: json['duration'],
       durationType: json['durationType'],
+      currency: json['currency'] ?? '\$',
       startDate: DateTime.parse(json['startDate']),
       dailyStatuses: Map<int, String>.from(
         (json['dailyStatuses'] ?? {}).map(
