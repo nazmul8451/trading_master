@@ -4,6 +4,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_typography.dart';
 import '../plan/goal_plans_library_screen.dart';
 import '../dashboard/dashboard_screen.dart';
+import '../trade/trade_setup_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -314,7 +315,12 @@ class HomeScreen extends StatelessWidget {
               icon: Icons.add_chart,
               label: "Add Trade",
               color: const Color(0xFF3B82F6),
-              onTap: () {},
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const TradeSetupScreen()),
+                );
+              },
             ),
             _buildActionCard(
               icon: Icons.track_changes,
