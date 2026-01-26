@@ -4,6 +4,8 @@ class TradeEntryModel {
   final double potentialProfit;
   final String status; // 'pending', 'win', 'loss'
   final bool isRecovery;
+  final String? emotion; // e.g., 'Calm', 'Fear', 'Greed'
+  final String? note;
 
   TradeEntryModel({
     required this.step,
@@ -11,6 +13,8 @@ class TradeEntryModel {
     required this.potentialProfit,
     this.status = 'pending',
     this.isRecovery = false,
+    this.emotion,
+    this.note,
   });
 
   Map<String, dynamic> toJson() {
@@ -20,6 +24,8 @@ class TradeEntryModel {
       'potentialProfit': potentialProfit,
       'status': status,
       'isRecovery': isRecovery,
+      'emotion': emotion,
+      'note': note,
     };
   }
 
@@ -30,16 +36,25 @@ class TradeEntryModel {
       potentialProfit: (json['potentialProfit'] as num).toDouble(),
       status: json['status'],
       isRecovery: json['isRecovery'] ?? false,
+      emotion: json['emotion'],
+      note: json['note'],
     );
   }
 
-  TradeEntryModel copyWith({String? status, bool? isRecovery}) {
+  TradeEntryModel copyWith({
+    String? status,
+    bool? isRecovery,
+    String? emotion,
+    String? note,
+  }) {
     return TradeEntryModel(
       step: step,
       investAmount: investAmount,
       potentialProfit: potentialProfit,
       status: status ?? this.status,
       isRecovery: isRecovery ?? this.isRecovery,
+      emotion: emotion ?? this.emotion,
+      note: note ?? this.note,
     );
   }
 }

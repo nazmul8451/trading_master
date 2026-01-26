@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'dart:math';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_typography.dart';
 import '../bottomNavigations_screen/home_screen.dart';
 import '../bottomNavigations_screen/plane.dart';
+import '../bottomNavigations_screen/analytics.dart';
 import 'widgets/side_menu.dart';
 
 class DashboardScreen extends StatefulWidget {
-  const DashboardScreen({Key? key}) : super(key: key);
+  const DashboardScreen({super.key});
 
   static _DashboardScreenState? of(BuildContext context) =>
       context.findAncestorStateOfType<_DashboardScreenState>();
@@ -50,7 +50,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
 
   final List<Widget> _screens = [
     const HomeScreen(),
-    const Center(child: Text("Analytics")),
+    const AnalyticsScreen(),
     const Center(child: Text("Log Trade")),
     const PlaneScreen(),
     const Center(child: Text("Settings")),
@@ -78,9 +78,8 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
               double radius = _animationController.value * 32.r;
 
               return Transform(
-                transform: Matrix4.identity()
-                  ..translate(slide)
-                  ..scale(scale),
+                transform: Matrix4.translationValues(slide, 0, 0)
+                  ..scale(scale, scale, 1.0),
                 alignment: Alignment.centerLeft,
                 child: GestureDetector(
                   onTap: _isDrawerOpen ? toggleDrawer : null,

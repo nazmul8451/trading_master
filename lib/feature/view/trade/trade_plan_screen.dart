@@ -4,6 +4,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../controller/trade_controller.dart';
 import '../../model/trade_plan_model.dart';
+import 'trade_plan_screen_journal.dart';
 
 class TradePlanScreen extends StatefulWidget {
   final TradePlanModel plan;
@@ -19,7 +20,6 @@ class _TradePlanScreenState extends State<TradePlanScreen> {
   double _currentBalance = 0;
   double _totalProfit = 0;
   double _totalLossToRecover = 0;
-  int _completedTrades = 0;
   int _consecutiveLosses = 0;
 
   @override
@@ -37,7 +37,6 @@ class _TradePlanScreenState extends State<TradePlanScreen> {
         _currentPlan.entries[index] = entry.copyWith(status: 'win');
         _currentBalance += entry.potentialProfit;
         _totalProfit += entry.potentialProfit;
-        _completedTrades++;
         
         // WIN: Reset recovery tracking
         _totalLossToRecover = 0;
@@ -49,17 +48,13 @@ class _TradePlanScreenState extends State<TradePlanScreen> {
         int currentStep = entry.step;
         int nextStep = currentStep + 1;
         
-        if (nextStep <= TradeController.defaultSteps) {
+        if (true) {
              final nextTrade = TradeController.createNextStepTrade(
               nextStep: nextStep,
-              totalTarget: _currentPlan.targetProfit,
+              balance: _currentBalance, // Compounding: use growing balance
               payoutPercentage: _currentPlan.payoutPercentage,
              );
              _currentPlan.entries.add(nextTrade);
-        } else {
-            // Plan Completed!
-             _showCompletionDialog(true);
-             return; 
         }
       } else {
         _currentPlan.entries[index] = entry.copyWith(status: 'loss');
@@ -73,9 +68,8 @@ class _TradePlanScreenState extends State<TradePlanScreen> {
         // Create a Recovery Trade and INSERT it after the current one
         // detailed logic: recovery must cover 'totalLossToRecover' + original step target
         final nextTrade = TradeController.createRecoveryTrade(
-          stepNumber: entry.step, // We stay on the same step number!
-          lossToRecover: _totalLossToRecover,
-          targetProfitForStep: entry.potentialProfit, // Aim for the same target
+          stepNumber: entry.step,
+          balance: _currentBalance,
           payoutPercentage: _currentPlan.payoutPercentage,
         );
 
@@ -83,6 +77,18 @@ class _TradePlanScreenState extends State<TradePlanScreen> {
         _currentPlan.entries.insert(index + 1, nextTrade);
       }
     });
+
+    JournalEntryDialog.show(
+      context,
+      onSave: (emotion, note) {
+        setState(() {
+          _currentPlan.entries[index] = _currentPlan.entries[index].copyWith(
+            emotion: emotion,
+            note: note,
+          );
+        });
+      },
+    );
 
     if (_consecutiveLosses >= 3) {
       _showDisciplineDialog();
@@ -227,7 +233,8 @@ class _TradePlanScreenState extends State<TradePlanScreen> {
         ),
         centerTitle: true,
       ),
-      body: Column(
+      body: ListView(
+        padding: EdgeInsets.zero,
         children: [
           _buildSummaryHeader(),
           SizedBox(height: 16.h),
@@ -236,7 +243,7 @@ class _TradePlanScreenState extends State<TradePlanScreen> {
             child: Text(
               'CURRENT TRADE',
               style: AppTypography.body.copyWith(
-                color: AppColors.textBody.withOpacity(0.5),
+                color: AppColors.textBody.withValues(alpha: 0.5),
                 fontSize: 10.sp,
                 letterSpacing: 1.5,
                 fontWeight: FontWeight.bold,
@@ -250,14 +257,14 @@ class _TradePlanScreenState extends State<TradePlanScreen> {
             child: _buildActiveTradeCard(activeTradeIndex),
           ),
           SizedBox(height: 24.h),
-           Padding(
+          Padding(
             padding: EdgeInsets.symmetric(horizontal: 16.r),
             child: Row(
               children: [
                 Text(
                   'HISTORY',
                   style: AppTypography.body.copyWith(
-                    color: AppColors.textBody.withOpacity(0.5),
+                    color: AppColors.textBody.withValues(alpha: 0.5),
                     fontSize: 10.sp,
                     letterSpacing: 1.5,
                     fontWeight: FontWeight.bold,
@@ -269,21 +276,21 @@ class _TradePlanScreenState extends State<TradePlanScreen> {
             ),
           ),
           SizedBox(height: 8.h),
-          Expanded(
-            child: ListView.builder(
-              padding: EdgeInsets.symmetric(horizontal: 16.r),
-              itemCount: historyCount,
-              // Show newest history on top
-              reverse: true,
-              itemBuilder: (context, index) {
-                // index 0 in listview is index 0 in list (oldest). 
-                // But we want reverse order visually? 
-                // ListView.builder with reverse:true expects item 0 to be at bottom.
-                // Let's just map normally.
-                return _buildHistoryCard(index);
-              },
-            ),
+          // History List
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            padding: EdgeInsets.symmetric(horizontal: 16.r),
+            itemCount: historyCount,
+            // Show newest history on top by reversing the list indexing
+            itemBuilder: (context, index) {
+              // index 0 -> historyCount - 1 (most recent)
+              // index 1 -> historyCount - 2
+              final reversedIndex = historyCount - 1 - index;
+              return _buildHistoryCard(reversedIndex);
+            },
           ),
+          SizedBox(height: 32.h), // Bottom padding
         ],
       ),
     );
@@ -385,18 +392,7 @@ class _TradePlanScreenState extends State<TradePlanScreen> {
     );
   }
 
-  Widget _buildWrapperCard({required Widget child, required Color borderColor, Color? bgColor}) {
-       return Container(
-        margin: EdgeInsets.only(bottom: 8.h),
-        padding: EdgeInsets.all(16.r),
-        decoration: BoxDecoration(
-          color: bgColor ?? AppColors.surface,
-          borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(color: borderColor),
-        ),
-        child: child,
-       );
-  }
+
 
   Widget _buildActiveTradeCard(int index) {
       final entry = _currentPlan.entries[index];
@@ -428,7 +424,7 @@ class _TradePlanScreenState extends State<TradePlanScreen> {
                                  borderRadius: BorderRadius.circular(20.r),
                              ),
                              child: Text(
-                                 'STEP ${entry.step}',
+                                 'Entry No ${entry.step}',
                                  style: AppTypography.body.copyWith(
                                      color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 12.sp
                                  ),
@@ -456,6 +452,15 @@ class _TradePlanScreenState extends State<TradePlanScreen> {
                  Text(
                      '${_currentPlan.currency}${entry.investAmount.toStringAsFixed(2)}',
                      style: AppTypography.heading.copyWith(fontSize: 42.sp, color: AppColors.textMain),
+                 ),
+                 SizedBox(height: 4.h),
+                 Text(
+                   entry.isRecovery ? '2.5% of Balance' : '1.0% of Balance',
+                   style: AppTypography.body.copyWith(
+                     color: AppColors.textBody.withValues(alpha: 0.5),
+                     fontSize: 12.sp,
+                     fontWeight: FontWeight.w500,
+                   ),
                  ),
                  SizedBox(height: 8.h),
                  Text(

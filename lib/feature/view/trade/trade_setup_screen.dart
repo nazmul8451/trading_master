@@ -15,10 +15,10 @@ class TradeSetupScreen extends StatefulWidget {
 
 class _TradeSetupScreenState extends State<TradeSetupScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _balanceController = TextEditingController(text: '100');
-  final _targetProfitController = TextEditingController(text: '10');
-  final _stopLossController = TextEditingController(text: '10');
-  final _payoutController = TextEditingController(text: '82');
+  final _balanceController = TextEditingController();
+  final _targetProfitController = TextEditingController();
+  final _stopLossController = TextEditingController();
+  final _payoutController = TextEditingController();
   String _selectedCurrency = '\$';
   final List<String> _currencies = ['\$', '৳', '€', '£', '¥', '₹'];
 
@@ -39,7 +39,7 @@ class _TradeSetupScreenState extends State<TradeSetupScreen> {
       final payout = double.parse(_payoutController.text);
 
       final entries = TradeController.generateInitialPlan(
-        totalTarget: target,
+        balance: balance,
         payoutPercentage: payout,
       );
       
@@ -123,7 +123,7 @@ class _TradeSetupScreenState extends State<TradeSetupScreen> {
               ),
               SizedBox(height: 20.h),
               _buildInputCard(
-                label: 'PAYOUT PERCENTAGE (%)',
+                label: 'MARKET PERCENTAGE (%)',
                 hint: '82',
                 controller: _payoutController,
                 description: 'Broker payout ratio (e.g., 82 for 82%).',
@@ -259,7 +259,7 @@ class _TradeSetupScreenState extends State<TradeSetupScreen> {
                         hintText: hint,
                         hintStyle: AppTypography.heading.copyWith(
                           fontSize: 20.sp,
-                          color: AppColors.textBody.withOpacity(0.2),
+                          color: AppColors.textBody.withValues(alpha: 0.4),
                         ),
                         border: InputBorder.none,
                         isDense: true,
