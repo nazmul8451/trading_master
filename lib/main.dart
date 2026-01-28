@@ -40,6 +40,20 @@ class MyApp extends StatelessWidget {
               seedColor: const Color(0xFF2369FF),
               brightness: Brightness.dark,
             ),
+            appBarTheme: AppBarTheme(
+              backgroundColor: const Color(0xFF0D1117),
+              elevation: 0,
+              centerTitle: true,
+              titleTextStyle: TextStyle(
+                fontSize: 18.sp.clamp(16, 20).toDouble(),
+                fontWeight: FontWeight.w500,
+                color: Colors.white,
+              ),
+              iconTheme: IconThemeData(
+                color: Colors.white,
+                size: 24.sp.clamp(20, 28).toDouble(),
+              ),
+            ),
           ),
           initialRoute: AppRoutes.getStarted,
           routes: {

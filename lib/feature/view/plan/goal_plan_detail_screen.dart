@@ -277,8 +277,6 @@ class _GoalPlanDetailScreenState extends State<GoalPlanDetailScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        surfaceTintColor: Colors.transparent,
-        backgroundColor: Colors.transparent,
         title: const Text('Plan Details'),
       ),
       body: SafeArea(
