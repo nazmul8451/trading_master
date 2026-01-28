@@ -77,7 +77,7 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
               Text(
-                "Alex Sterling",
+                "Rimon islam",
                 style: AppTypography.buttonText.copyWith(
                   fontSize: 16.sp.clamp(14, 18).toDouble(),
                   color: AppColors.textMain,

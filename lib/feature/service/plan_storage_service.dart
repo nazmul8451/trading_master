@@ -28,6 +28,26 @@ class PlanStorageService {
     }
   }
 
+  Future<void> deletePlanById(String planId) async {
+    List<dynamic> plansJson = _storage.read(_storageKey) ?? [];
+    List<PlanModel> plans = plansJson.map((json) => PlanModel.fromJson(json as Map<String, dynamic>)).toList();
+    
+    plans.removeWhere((plan) => plan.id == planId);
+    
+    List<dynamic> updatedPlansJson = plans.map((plan) => plan.toJson()).toList();
+    await _storage.write(_storageKey, updatedPlansJson);
+  }
+
+  Future<void> deletePlansByIds(List<String> planIds) async {
+    List<dynamic> plansJson = _storage.read(_storageKey) ?? [];
+    List<PlanModel> plans = plansJson.map((json) => PlanModel.fromJson(json as Map<String, dynamic>)).toList();
+    
+    plans.removeWhere((plan) => planIds.contains(plan.id));
+    
+    List<dynamic> updatedPlansJson = plans.map((plan) => plan.toJson()).toList();
+    await _storage.write(_storageKey, updatedPlansJson);
+  }
+
   Future<void> updatePlan(PlanModel updatedPlan) async {
     List<dynamic> plansJson = _storage.read(_storageKey) ?? [];
     List<PlanModel> plans = plansJson.map((json) => PlanModel.fromJson(json as Map<String, dynamic>)).toList();
