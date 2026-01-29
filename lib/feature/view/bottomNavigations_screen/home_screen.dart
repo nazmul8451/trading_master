@@ -5,6 +5,7 @@ import '../../../core/constants/app_typography.dart';
 import '../plan/goal_plans_library_screen.dart';
 import '../dashboard/dashboard_screen.dart';
 import '../trade/trade_setup_screen.dart';
+import '../journal/journal_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -337,7 +338,12 @@ class HomeScreen extends StatelessWidget {
               icon: Icons.menu_book,
               label: "Journal",
               color: const Color(0xFFF59E0B),
-              onTap: () {},
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const JournalScreen()),
+                );
+              },
             ),
             _buildActionCard(
               icon: Icons.analytics,

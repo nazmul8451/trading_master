@@ -4,6 +4,9 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../controller/trade_controller.dart';
 import '../../model/trade_plan_model.dart';
+import '../../model/journal_model.dart';
+import '../../service/journal_storage_service.dart';
+import 'package:intl/intl.dart';
 import 'trade_plan_screen_journal.dart';
 
 class TradePlanScreen extends StatefulWidget {
@@ -80,13 +83,25 @@ class _TradePlanScreenState extends State<TradePlanScreen> {
 
     JournalEntryDialog.show(
       context,
-      onSave: (emotion, note) {
+      onSave: (emotion, note) async {
         setState(() {
           _currentPlan.entries[index] = _currentPlan.entries[index].copyWith(
             emotion: emotion,
             note: note,
           );
         });
+
+        // Save to Journal Storage for the Journal Screen
+        final journal = JournalModel(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          date: DateTime.now(),
+          emotion: emotion,
+          note: note,
+          relatedId: _currentPlan.id,
+          type: 'plan_day',
+          title: '${DateFormat('EEEE').format(DateTime.now())} Journal',
+        );
+        await JournalStorageService().saveJournal(journal);
       },
     );
 

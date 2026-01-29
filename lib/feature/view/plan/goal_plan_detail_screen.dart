@@ -4,7 +4,11 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../model/plan_model.dart';
 import '../../controller/plan_controller.dart';
+import 'package:intl/intl.dart';
 import '../../service/plan_storage_service.dart';
+import '../../model/journal_model.dart';
+import '../../service/journal_storage_service.dart';
+import '../trade/trade_plan_screen_journal.dart';
 
 class GoalPlanDetailScreen extends StatefulWidget {
   final PlanModel plan;
@@ -157,6 +161,50 @@ class _GoalPlanDetailScreenState extends State<GoalPlanDetailScreen> {
                     height: 1.5,
                   ),
                   textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 24.h),
+                InkWell(
+                  onTap: () {
+                    JournalEntryDialog.show(
+                      context,
+                      onSave: (emotion, note) async {
+                        final journal = JournalModel(
+                          id: DateTime.now().millisecondsSinceEpoch.toString(),
+                          date: DateTime.now(),
+                          emotion: emotion,
+                          note: note,
+                          relatedId: _currentPlan.id,
+                          type: 'plan_day',
+                          title: '${DateFormat('EEEE').format(DateTime.now())} Journal',
+                        );
+                        await JournalStorageService().saveJournal(journal);
+                        if(mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Journal entry saved!'), duration: Duration(seconds: 1)),
+                          );
+                        }
+                      },
+                    );
+                  },
+                  borderRadius: BorderRadius.circular(12.r),
+                  child: Container(
+                    padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 16.w),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: color.withOpacity(0.3)),
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.edit_note, color: color, size: 20.sp),
+                        SizedBox(width: 8.w),
+                        Text(
+                          'Add Journal Reflection',
+                          style: AppTypography.buttonText.copyWith(color: color, fontSize: 13.sp),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
                 SizedBox(height: 32.h),
                 Container(
