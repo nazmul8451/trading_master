@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'dart:ui';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_typography.dart';
 import '../plan/goal_plans_library_screen.dart';
@@ -7,8 +8,32 @@ import '../dashboard/dashboard_screen.dart';
 import '../trade/trade_setup_screen.dart';
 import '../journal/journal_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+import '../../service/wallet_service.dart';
+import 'package:get_storage/get_storage.dart';
+import 'package:intl/intl.dart';
+
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  double _balance = 0.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _balance = WalletService.balance;
+    GetStorage().listenKey('available_balance', (value) {
+      if (mounted) {
+        setState(() {
+          _balance = (value as num?)?.toDouble() ?? 0.0;
+        });
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -16,20 +41,32 @@ class HomeScreen extends StatelessWidget {
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(horizontal: 20.w.clamp(16, 24).toDouble()),
+          padding: EdgeInsets.symmetric(
+            horizontal: 20.w.clamp(16, 24).toDouble(),
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(height: 16.h.clamp(12, 20).toDouble()),
               _buildHeader(context),
               SizedBox(height: 24.h.clamp(20, 32).toDouble()),
-              _buildBalanceCard(),
+              _GlassCard(
+                width: double.infinity,
+                child: _buildBalanceCardContent(),
+              ),
               SizedBox(height: 24.h.clamp(20, 32).toDouble()),
-              _buildDisciplineStatus(),
+              _GlassCard(
+                width: double.infinity,
+                padding: EdgeInsets.all(16.r),
+                child: _buildDisciplineContent(),
+              ),
               SizedBox(height: 24.h.clamp(20, 32).toDouble()),
               _buildQuickActions(context),
               SizedBox(height: 24.h.clamp(20, 32).toDouble()),
-              _buildCompoundingCurve(),
+              _GlassCard(
+                width: double.infinity,
+                child: _buildCompoundingCurveContent(),
+              ),
               SizedBox(height: 24.h.clamp(20, 32).toDouble()),
             ],
           ),
@@ -104,189 +141,152 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBalanceCard() {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(20.r.clamp(16, 24).toDouble()),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(20.r.clamp(16, 24).toDouble()),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                "CURRENT BALANCE",
+  Widget _buildBalanceCardContent() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              "CURRENT BALANCE",
+              style: AppTypography.body.copyWith(
+                fontSize: 11.sp.clamp(9, 13).toDouble(),
+                color: AppColors.textBody,
+                letterSpacing: 1.2,
+              ),
+            ),
+            Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: 8.w.clamp(6, 12).toDouble(),
+                vertical: 4.h.clamp(2, 6).toDouble(),
+              ),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(6.r.clamp(4, 8).toDouble()),
+              ),
+              child: Text(
+                "Day 12 / 30",
                 style: AppTypography.body.copyWith(
-                  fontSize: 11.sp.clamp(9, 13).toDouble(),
-                  color: AppColors.textBody,
-                  letterSpacing: 1.2,
+                  fontSize: 10.sp.clamp(8, 12).toDouble(),
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
-              Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: 8.w.clamp(6, 12).toDouble(),
-                  vertical: 4.h.clamp(2, 6).toDouble(),
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(6.r.clamp(4, 8).toDouble()),
-                ),
-                child: Text(
-                  "Day 12 / 30",
-                  style: AppTypography.body.copyWith(
-                    fontSize: 10.sp.clamp(8, 12).toDouble(),
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w600,
-                  ),
+            ),
+          ],
+        ),
+        SizedBox(height: 8.h.clamp(6, 12).toDouble()),
+        Text(
+          NumberFormat.simpleCurrency().format(_balance),
+          style: TextStyle(
+            fontSize: 36.sp.clamp(30, 42).toDouble(),
+            fontWeight: FontWeight.bold,
+            color: AppColors.textMain,
+          ),
+        ),
+        SizedBox(height: 16.h.clamp(12, 20).toDouble()),
+        Text(
+          "Daily Target Progress",
+          style: AppTypography.body.copyWith(
+            fontSize: 12.sp.clamp(10, 14).toDouble(),
+            color: AppColors.textBody,
+          ),
+        ),
+        SizedBox(height: 8.h.clamp(6, 12).toDouble()),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              "\$325 / \$500",
+              style: AppTypography.buttonText.copyWith(
+                fontSize: 14.sp.clamp(12, 16).toDouble(),
+                color: AppColors.textMain,
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 8.h.clamp(6, 12).toDouble()),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(8.r.clamp(6, 12).toDouble()),
+          child: LinearProgressIndicator(
+            value: 0.65,
+            minHeight: 8.h.clamp(6, 10).toDouble(),
+            backgroundColor: Colors.white.withOpacity(0.1),
+            valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
+          ),
+        ),
+        SizedBox(height: 16.h.clamp(12, 20).toDouble()),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: () {},
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: AppColors.textMain,
+              minimumSize: Size(double.infinity, 48.h.clamp(42, 54).toDouble()),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(
+                  12.r.clamp(8, 16).toDouble(),
                 ),
               ),
-            ],
-          ),
-          SizedBox(height: 8.h.clamp(6, 12).toDouble()),
-          Text(
-            "\$12,450.00",
-            style: TextStyle(
-              fontSize: 36.sp.clamp(30, 42).toDouble(),
-              fontWeight: FontWeight.bold,
-              color: AppColors.textMain,
+              elevation: 0,
+            ),
+            child: Text(
+              "View Detailed Plan",
+              style: AppTypography.buttonText.copyWith(
+                fontSize: 14.sp.clamp(12, 16).toDouble(),
+              ),
             ),
           ),
-          SizedBox(height: 16.h.clamp(12, 20).toDouble()),
-          Text(
-            "Daily Target Progress",
-            style: AppTypography.body.copyWith(
-              fontSize: 12.sp.clamp(10, 14).toDouble(),
-              color: AppColors.textBody,
-            ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDisciplineContent() {
+    return Row(
+      children: [
+        Container(
+          width: 40.sp.clamp(36, 48).toDouble(),
+          height: 40.sp.clamp(36, 48).toDouble(),
+          decoration: BoxDecoration(
+            color: AppColors.success.withOpacity(0.15),
+            shape: BoxShape.circle,
           ),
-          SizedBox(height: 8.h.clamp(6, 12).toDouble()),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          child: Icon(
+            Icons.check_circle,
+            color: AppColors.success,
+            size: 24.sp.clamp(20, 28).toDouble(),
+          ),
+        ),
+        SizedBox(width: 12.w.clamp(8, 16).toDouble()),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "\$325 / \$500",
+                "Within Plan",
                 style: AppTypography.buttonText.copyWith(
                   fontSize: 14.sp.clamp(12, 16).toDouble(),
                   color: AppColors.textMain,
                 ),
               ),
+              SizedBox(height: 2.h.clamp(1, 4).toDouble()),
+              Text(
+                "Risk parameters are optimal. No plan violations detected.",
+                style: AppTypography.body.copyWith(
+                  fontSize: 11.sp.clamp(9, 13).toDouble(),
+                  color: AppColors.textBody,
+                ),
+              ),
             ],
-          ),
-          SizedBox(height: 8.h.clamp(6, 12).toDouble()),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8.r.clamp(6, 12).toDouble()),
-            child: LinearProgressIndicator(
-              value: 0.65,
-              minHeight: 8.h.clamp(6, 10).toDouble(),
-              backgroundColor: AppColors.border,
-              valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
-            ),
-          ),
-          SizedBox(height: 8.h.clamp(6, 12).toDouble()),
-          Text(
-            "65% of compounding target reached today",
-            style: AppTypography.body.copyWith(
-              fontSize: 11.sp.clamp(9, 13).toDouble(),
-              color: AppColors.textBody,
-            ),
-          ),
-          SizedBox(height: 16.h.clamp(12, 20).toDouble()),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () {},
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: AppColors.textMain,
-                minimumSize: Size(double.infinity, 48.h.clamp(42, 54).toDouble()),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12.r.clamp(8, 16).toDouble()),
-                ),
-                elevation: 0,
-              ),
-              child: Text(
-                "View Detailed Plan",
-                style: AppTypography.buttonText.copyWith(
-                  fontSize: 14.sp.clamp(12, 16).toDouble(),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDisciplineStatus() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          "Discipline Status",
-          style: AppTypography.subHeading.copyWith(
-            fontSize: 18.sp.clamp(16, 22).toDouble(),
-            color: AppColors.textMain,
           ),
         ),
-        SizedBox(height: 12.h.clamp(8, 16).toDouble()),
-        Container(
-          width: double.infinity,
-          padding: EdgeInsets.all(16.r.clamp(12, 20).toDouble()),
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(16.r.clamp(12, 20).toDouble()),
-            border: Border.all(color: AppColors.border),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 40.sp.clamp(36, 48).toDouble(),
-                height: 40.sp.clamp(36, 48).toDouble(),
-                decoration: BoxDecoration(
-                  color: AppColors.success.withOpacity(0.15),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.check_circle,
-                  color: AppColors.success,
-                  size: 24.sp.clamp(20, 28).toDouble(),
-                ),
-              ),
-              SizedBox(width: 12.w.clamp(8, 16).toDouble()),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Within Plan",
-                      style: AppTypography.buttonText.copyWith(
-                        fontSize: 14.sp.clamp(12, 16).toDouble(),
-                        color: AppColors.textMain,
-                      ),
-                    ),
-                    SizedBox(height: 2.h.clamp(1, 4).toDouble()),
-                    Text(
-                      "Risk parameters are optimal. No plan violations detected.",
-                      style: AppTypography.body.copyWith(
-                        fontSize: 11.sp.clamp(9, 13).toDouble(),
-                        color: AppColors.textBody,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Icon(
-                Icons.chevron_right,
-                color: AppColors.textBody,
-                size: 20.sp.clamp(18, 24).toDouble(),
-              ),
-            ],
-          ),
+        Icon(
+          Icons.chevron_right,
+          color: AppColors.textBody,
+          size: 20.sp.clamp(18, 24).toDouble(),
         ),
       ],
     );
@@ -319,7 +319,9 @@ class HomeScreen extends StatelessWidget {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const TradeSetupScreen()),
+                  MaterialPageRoute(
+                    builder: (context) => const TradeSetupScreen(),
+                  ),
                 );
               },
             ),
@@ -330,7 +332,9 @@ class HomeScreen extends StatelessWidget {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => GoalPlansLibraryScreen()),
+                  MaterialPageRoute(
+                    builder: (context) => GoalPlansLibraryScreen(),
+                  ),
                 );
               },
             ),
@@ -341,7 +345,9 @@ class HomeScreen extends StatelessWidget {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const JournalScreen()),
+                  MaterialPageRoute(
+                    builder: (context) => const JournalScreen(),
+                  ),
                 );
               },
             ),
@@ -349,7 +355,9 @@ class HomeScreen extends StatelessWidget {
               icon: Icons.analytics,
               label: "Analytics",
               color: const Color(0xFFEF4444),
-              onTap: () {},
+              onTap: () {
+                DashboardScreen.of(context)?.changePageIndex(1);
+              },
             ),
           ],
         ),
@@ -363,12 +371,8 @@ class HomeScreen extends StatelessWidget {
     required Color color,
     required VoidCallback onTap,
   }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16.r.clamp(12, 20).toDouble()),
-        border: Border.all(color: AppColors.border),
-      ),
+    return _GlassCard(
+      padding: EdgeInsets.zero,
       child: Material(
         color: Colors.transparent,
         child: InkWell(
@@ -382,7 +386,9 @@ class HomeScreen extends StatelessWidget {
                 height: 48.sp.clamp(40, 56).toDouble(),
                 decoration: BoxDecoration(
                   color: color.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(12.r.clamp(8, 16).toDouble()),
+                  borderRadius: BorderRadius.circular(
+                    12.r.clamp(8, 16).toDouble(),
+                  ),
                 ),
                 child: Icon(
                   icon,
@@ -405,54 +411,46 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCompoundingCurve() {
+  Widget _buildCompoundingCurveContent() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           "Compounding Curve",
           style: AppTypography.subHeading.copyWith(
-            fontSize: 18.sp.clamp(16, 22).toDouble(),
+            fontSize: 16.sp,
             color: AppColors.textMain,
           ),
         ),
         SizedBox(height: 12.h.clamp(8, 16).toDouble()),
-        Container(
+        SizedBox(
           width: double.infinity,
-          height: 200.h.clamp(180, 240).toDouble(),
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(16.r.clamp(12, 20).toDouble()),
-            border: Border.all(color: AppColors.border),
-          ),
+          height: 180.h,
           child: Stack(
             children: [
-              Padding(
-                padding: EdgeInsets.all(16.r.clamp(12, 20).toDouble()),
-                child: CustomPaint(
-                  size: const Size(double.infinity, double.infinity),
-                  painter: _CompoundingCurvePainter(),
-                ),
+              CustomPaint(
+                size: const Size(double.infinity, double.infinity),
+                painter: _CompoundingCurvePainter(),
               ),
               Positioned(
-                bottom: 12.h.clamp(8, 16).toDouble(),
-                left: 16.w.clamp(12, 20).toDouble(),
+                bottom: 0,
+                left: 0,
                 child: Text(
                   "PROJECTION: \$25,000.00 BY DAY 30",
                   style: AppTypography.body.copyWith(
-                    fontSize: 10.sp.clamp(8, 12).toDouble(),
+                    fontSize: 10.sp,
                     color: AppColors.textBody,
                     letterSpacing: 0.5,
                   ),
                 ),
               ),
               Positioned(
-                bottom: 12.h.clamp(8, 16).toDouble(),
-                right: 16.w.clamp(12, 20).toDouble(),
+                bottom: 0,
+                right: 0,
                 child: Text(
                   "+12.4%",
                   style: AppTypography.buttonText.copyWith(
-                    fontSize: 12.sp.clamp(10, 14).toDouble(),
+                    fontSize: 12.sp,
                     color: const Color(0xFF10B981),
                   ),
                 ),
@@ -461,6 +459,42 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _GlassCard extends StatelessWidget {
+  final Widget child;
+  final EdgeInsetsGeometry? padding;
+  final double? width;
+
+  const _GlassCard({required this.child, this.padding, this.width});
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(24.r),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          width: width,
+          padding: padding ?? EdgeInsets.all(24.r),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.03),
+            borderRadius: BorderRadius.circular(24.r),
+            border: Border.all(color: Colors.white.withOpacity(0.05)),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.white.withOpacity(0.05),
+                Colors.white.withOpacity(0.01),
+              ],
+            ),
+          ),
+          child: child,
+        ),
+      ),
     );
   }
 }
@@ -487,7 +521,7 @@ class _CompoundingCurvePainter extends CustomPainter {
       final x = i;
       final progress = i / size.width;
       final y = size.height * 0.7 * (1 - progress * 0.8);
-      
+
       linePath.lineTo(x, y);
       if (i == 0) {
         path.lineTo(x, y);
@@ -503,17 +537,13 @@ class _CompoundingCurvePainter extends CustomPainter {
     canvas.drawPath(linePath, linePaint);
 
     final gridPaint = Paint()
-      ..color = AppColors.border
+      ..color = AppColors.border.withOpacity(0.3)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1;
 
     for (int i = 1; i < 4; i++) {
       final x = size.width * i / 4;
-      canvas.drawLine(
-        Offset(x, 0),
-        Offset(x, size.height),
-        gridPaint,
-      );
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), gridPaint);
     }
   }
 

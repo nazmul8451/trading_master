@@ -8,6 +8,7 @@ import '../../model/journal_model.dart';
 import '../../service/journal_storage_service.dart';
 import 'package:intl/intl.dart';
 import 'trade_plan_screen_journal.dart';
+import '../../service/trade_storage_service.dart';
 
 class TradePlanScreen extends StatefulWidget {
   final TradePlanModel plan;
@@ -32,39 +33,39 @@ class _TradePlanScreenState extends State<TradePlanScreen> {
     _currentBalance = _currentPlan.balance;
   }
 
-  void _onTradeOutcome(int index, bool isWin) {
+  Future<void> _onTradeOutcome(int index, bool isWin) async {
     setState(() {
       final entry = _currentPlan.entries[index];
-      
+
       if (isWin) {
         _currentPlan.entries[index] = entry.copyWith(status: 'win');
         _currentBalance += entry.potentialProfit;
         _totalProfit += entry.potentialProfit;
-        
+
         // WIN: Reset recovery tracking
         _totalLossToRecover = 0;
         _consecutiveLosses = 0;
 
         // Determine Next Move:
         // Logic: If we finished Step X, move to Step X+1.
-        
+
         int currentStep = entry.step;
         int nextStep = currentStep + 1;
-        
+
         if (true) {
-             final nextTrade = TradeController.createNextStepTrade(
-              nextStep: nextStep,
-              balance: _currentBalance, // Compounding: use growing balance
-              payoutPercentage: _currentPlan.payoutPercentage,
-             );
-             _currentPlan.entries.add(nextTrade);
+          final nextTrade = TradeController.createNextStepTrade(
+            nextStep: nextStep,
+            balance: _currentBalance, // Compounding: use growing balance
+            payoutPercentage: _currentPlan.payoutPercentage,
+          );
+          _currentPlan.entries.add(nextTrade);
         }
       } else {
         _currentPlan.entries[index] = entry.copyWith(status: 'loss');
         _currentBalance -= entry.investAmount;
         _totalProfit -= entry.investAmount;
         _consecutiveLosses++;
-        
+
         // LOSS: Add to recovery pile
         _totalLossToRecover += entry.investAmount;
 
@@ -102,13 +103,19 @@ class _TradePlanScreenState extends State<TradePlanScreen> {
           title: '${DateFormat('EEEE').format(DateTime.now())} Journal',
         );
         await JournalStorageService().saveJournal(journal);
+
+        // Save the updated trade plan session
+        await TradeStorageService().saveTradeSession(_currentPlan);
       },
     );
 
+    // Also save immediately after outcome change
+    TradeStorageService().saveTradeSession(_currentPlan);
+
     if (_consecutiveLosses >= 3) {
       _showDisciplineDialog();
-    } else if (_totalProfit >= _currentPlan.targetProfit - 0.1) { 
-       // Tolerance for float precision
+    } else if (_totalProfit >= _currentPlan.targetProfit - 0.1) {
+      // Tolerance for float precision
       _showCompletionDialog(true);
     } else if (_totalProfit <= -_currentPlan.stopLossLimit) {
       _showCompletionDialog(false);
@@ -121,7 +128,9 @@ class _TradePlanScreenState extends State<TradePlanScreen> {
       barrierDismissible: false,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.r),
+        ),
         title: Text(
           '⚠️ Take a Break!',
           style: AppTypography.heading.copyWith(
@@ -133,11 +142,7 @@ class _TradePlanScreenState extends State<TradePlanScreen> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.timer_outlined,
-              color: AppColors.accentBlue,
-              size: 56.r,
-            ),
+            Icon(Icons.timer_outlined, color: AppColors.accentBlue, size: 56.r),
             SizedBox(height: 16.h),
             Text(
               'You have lost 3 trades in a row.\n\nTo protect your mindset and capital, please take a 5-10 minute break. Step away, breathe, and reset.',
@@ -154,15 +159,17 @@ class _TradePlanScreenState extends State<TradePlanScreen> {
             onPressed: () {
               Navigator.pop(context); // Close dialog
               // Reset consecutive losses after user acknowledges the warning
-              // Not resetting strictly, but allowing them to continue. 
+              // Not resetting strictly, but allowing them to continue.
               // Or should we force reset?
               setState(() {
-                _consecutiveLosses = 0; 
+                _consecutiveLosses = 0;
               });
             },
             child: Text(
               'I HAVE RESTED',
-              style: AppTypography.buttonText.copyWith(color: AppColors.primary),
+              style: AppTypography.buttonText.copyWith(
+                color: AppColors.primary,
+              ),
             ),
           ),
         ],
@@ -176,7 +183,9 @@ class _TradePlanScreenState extends State<TradePlanScreen> {
       barrierDismissible: false,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.r),
+        ),
         title: Text(
           isSuccess ? 'Daily Goal Achieved!' : 'Stop Loss Reached',
           style: AppTypography.heading.copyWith(
@@ -205,7 +214,9 @@ class _TradePlanScreenState extends State<TradePlanScreen> {
             Text(
               'Final Profit: ${_currentPlan.currency}${_totalProfit.toStringAsFixed(2)}',
               style: AppTypography.subHeading.copyWith(
-                color: _totalProfit >= 0 ? AppColors.success : AppColors.accentBlue,
+                color: _totalProfit >= 0
+                    ? AppColors.success
+                    : AppColors.accentBlue,
               ),
             ),
           ],
@@ -218,7 +229,9 @@ class _TradePlanScreenState extends State<TradePlanScreen> {
             },
             child: Text(
               'CONTINUE',
-              style: AppTypography.buttonText.copyWith(color: AppColors.primary),
+              style: AppTypography.buttonText.copyWith(
+                color: AppColors.primary,
+              ),
             ),
           ),
         ],
@@ -239,7 +252,11 @@ class _TradePlanScreenState extends State<TradePlanScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, color: AppColors.textMain, size: 20.sp),
+          icon: Icon(
+            Icons.arrow_back_ios,
+            color: AppColors.textMain,
+            size: 20.sp,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -332,11 +349,16 @@ class _TradePlanScreenState extends State<TradePlanScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildStatItem('Balance', '${_currentPlan.currency}${_currentBalance.toStringAsFixed(2)}'),
+              _buildStatItem(
+                'Balance',
+                '${_currentPlan.currency}${_currentBalance.toStringAsFixed(2)}',
+              ),
               _buildStatItem(
                 'Profit/Loss',
                 '${_currentPlan.currency}${_totalProfit.toStringAsFixed(2)}',
-                valueColor: _totalProfit >= 0 ? AppColors.success : AppColors.accentBlue,
+                valueColor: _totalProfit >= 0
+                    ? AppColors.success
+                    : AppColors.accentBlue,
               ),
             ],
           ),
@@ -344,11 +366,15 @@ class _TradePlanScreenState extends State<TradePlanScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildStatItem('Payout', '${_currentPlan.payoutPercentage}%', small: true),
+              _buildStatItem(
+                'Payout',
+                '${_currentPlan.payoutPercentage}%',
+                small: true,
+              ),
               if (_totalLossToRecover > 0)
                 _buildStatItem(
-                  'Loss to Recover', 
-                  '${_currentPlan.currency}${_totalLossToRecover.toStringAsFixed(2)}', 
+                  'Loss to Recover',
+                  '${_currentPlan.currency}${_totalLossToRecover.toStringAsFixed(2)}',
                   valueColor: AppColors.accentBlue,
                   small: true,
                 ),
@@ -360,7 +386,9 @@ class _TradePlanScreenState extends State<TradePlanScreen> {
             child: LinearProgressIndicator(
               value: (_totalProfit / _currentPlan.targetProfit).clamp(0, 1),
               backgroundColor: Colors.white.withOpacity(0.05),
-              valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
+              valueColor: const AlwaysStoppedAnimation<Color>(
+                AppColors.primary,
+              ),
               minHeight: 8.h,
             ),
           ),
@@ -370,7 +398,10 @@ class _TradePlanScreenState extends State<TradePlanScreen> {
             children: [
               Text(
                 'Target: ${_currentPlan.currency}${_currentPlan.targetProfit}',
-                style: AppTypography.body.copyWith(fontSize: 10.sp, color: AppColors.textBody),
+                style: AppTypography.body.copyWith(
+                  fontSize: 10.sp,
+                  color: AppColors.textBody,
+                ),
               ),
               Text(
                 '${((_totalProfit / _currentPlan.targetProfit) * 100).clamp(0, 100).toStringAsFixed(1)}%',
@@ -387,13 +418,21 @@ class _TradePlanScreenState extends State<TradePlanScreen> {
     );
   }
 
-  Widget _buildStatItem(String label, String value, {Color? valueColor, bool small = false}) {
+  Widget _buildStatItem(
+    String label,
+    String value, {
+    Color? valueColor,
+    bool small = false,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: AppTypography.body.copyWith(fontSize: small ? 10.sp : 12.sp, color: AppColors.textBody),
+          style: AppTypography.body.copyWith(
+            fontSize: small ? 10.sp : 12.sp,
+            color: AppColors.textBody,
+          ),
         ),
         SizedBox(height: 4.h),
         Text(
@@ -407,190 +446,248 @@ class _TradePlanScreenState extends State<TradePlanScreen> {
     );
   }
 
-
-
   Widget _buildActiveTradeCard(int index) {
-      final entry = _currentPlan.entries[index];
-      // Active card is prominent
-      return Container(
-        width: double.infinity,
-        padding: EdgeInsets.all(24.r),
-        decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(20.r),
-            border: Border.all(color: AppColors.primary.withOpacity(0.5), width: 1.5),
-            boxShadow: [
-                BoxShadow(
-                    color: AppColors.primary.withOpacity(0.1),
-                    blurRadius: 20,
-                    offset: const Offset(0, 8),
-                )
-            ]
+    final entry = _currentPlan.entries[index];
+    // Active card is prominent
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(24.r),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(
+          color: AppColors.primary.withOpacity(0.5),
+          width: 1.5,
         ),
-        child: Column(
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-                 Row(
-                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                     children: [
-                         Container(
-                             padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-                             decoration: BoxDecoration(
-                                 color: AppColors.primary.withOpacity(0.2),
-                                 borderRadius: BorderRadius.circular(20.r),
-                             ),
-                             child: Text(
-                                 'Entry No ${entry.step}',
-                                 style: AppTypography.body.copyWith(
-                                     color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 12.sp
-                                 ),
-                             ),
-                         ),
-                         if (entry.isRecovery)
-                            Container(
-                             padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-                             decoration: BoxDecoration(
-                                 color: AppColors.accentBlue.withOpacity(0.2),
-                                 borderRadius: BorderRadius.circular(20.r),
-                             ),
-                             child: Text(
-                                 'RECOVERY',
-                                 style: AppTypography.body.copyWith(
-                                     color: AppColors.accentBlue, fontWeight: FontWeight.bold, fontSize: 12.sp
-                                 ),
-                             ),
-                         ),
-                     ],
-                 ),
-                 SizedBox(height: 24.h),
-                 Text('INVESTMENT', style: AppTypography.body.copyWith(color: AppColors.textBody, letterSpacing: 1)),
-                 SizedBox(height: 8.h),
-                 Text(
-                     '${_currentPlan.currency}${entry.investAmount.toStringAsFixed(2)}',
-                     style: AppTypography.heading.copyWith(fontSize: 42.sp, color: AppColors.textMain),
-                 ),
-                 SizedBox(height: 4.h),
-                 Text(
-                   entry.isRecovery ? '2.5% of Balance' : '1.0% of Balance',
-                   style: AppTypography.body.copyWith(
-                     color: AppColors.textBody.withValues(alpha: 0.5),
-                     fontSize: 12.sp,
-                     fontWeight: FontWeight.w500,
-                   ),
-                 ),
-                 SizedBox(height: 8.h),
-                 Text(
-                      'Target Profit: +${_currentPlan.currency}${entry.potentialProfit.toStringAsFixed(2)}',
-                      style: AppTypography.body.copyWith(color: AppColors.success, fontSize: 14.sp),
-                 ),
-                 SizedBox(height: 32.h),
-                 Row(
-                     children: [
-                         Expanded(
-                             child: InkWell(
-                                 onTap: () => _onTradeOutcome(index, false),
-                                 borderRadius: BorderRadius.circular(12.r),
-                                 child: Container(
-                                     padding: EdgeInsets.symmetric(vertical: 16.h),
-                                     decoration: BoxDecoration(
-                                         color: AppColors.accentBlue.withOpacity(0.1),
-                                         borderRadius: BorderRadius.circular(12.r),
-                                         border: Border.all(color: AppColors.accentBlue.withOpacity(0.3)),
-                                     ),
-                                     child: Center(
-                                         child: Row(
-                                             mainAxisAlignment: MainAxisAlignment.center,
-                                             children: [
-                                                 Icon(Icons.close, color: AppColors.accentBlue),
-                                                 SizedBox(width: 8.w),
-                                                 Text('LOSS', style: AppTypography.buttonText.copyWith(color: AppColors.accentBlue)),
-                                             ],
-                                         )
-                                     ),
-                                 ),
-                             )
-                         ),
-                         SizedBox(width: 16.w),
-                          Expanded(
-                             child: InkWell(
-                                 onTap: () => _onTradeOutcome(index, true),
-                                 borderRadius: BorderRadius.circular(12.r),
-                                 child: Container(
-                                     padding: EdgeInsets.symmetric(vertical: 16.h),
-                                     decoration: BoxDecoration(
-                                         color: AppColors.success.withOpacity(0.1),
-                                         borderRadius: BorderRadius.circular(12.r),
-                                         border: Border.all(color: AppColors.success.withOpacity(0.3)),
-                                     ),
-                                     child: Center(
-                                         child: Row(
-                                             mainAxisAlignment: MainAxisAlignment.center,
-                                             children: [
-                                                 Icon(Icons.check, color: AppColors.success),
-                                                 SizedBox(width: 8.w),
-                                                 Text('WIN', style: AppTypography.buttonText.copyWith(color: AppColors.success)),
-                                             ],
-                                         )
-                                     ),
-                                 ),
-                             )
-                         ),
-                     ],
-                 )
-
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(20.r),
+                ),
+                child: Text(
+                  'Entry No ${entry.step}',
+                  style: AppTypography.body.copyWith(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12.sp,
+                  ),
+                ),
+              ),
+              if (entry.isRecovery)
+                Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 10.w,
+                    vertical: 4.h,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.accentBlue.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(20.r),
+                  ),
+                  child: Text(
+                    'RECOVERY',
+                    style: AppTypography.body.copyWith(
+                      color: AppColors.accentBlue,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12.sp,
+                    ),
+                  ),
+                ),
             ],
-        ),
-      );
+          ),
+          SizedBox(height: 24.h),
+          Text(
+            'INVESTMENT',
+            style: AppTypography.body.copyWith(
+              color: AppColors.textBody,
+              letterSpacing: 1,
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Text(
+            '${_currentPlan.currency}${entry.investAmount.toStringAsFixed(2)}',
+            style: AppTypography.heading.copyWith(
+              fontSize: 42.sp,
+              color: AppColors.textMain,
+            ),
+          ),
+          SizedBox(height: 4.h),
+          Text(
+            entry.isRecovery ? '2.5% of Balance' : '1.0% of Balance',
+            style: AppTypography.body.copyWith(
+              color: AppColors.textBody.withValues(alpha: 0.5),
+              fontSize: 12.sp,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Text(
+            'Target Profit: +${_currentPlan.currency}${entry.potentialProfit.toStringAsFixed(2)}',
+            style: AppTypography.body.copyWith(
+              color: AppColors.success,
+              fontSize: 14.sp,
+            ),
+          ),
+          SizedBox(height: 32.h),
+          Row(
+            children: [
+              Expanded(
+                child: InkWell(
+                  onTap: () => _onTradeOutcome(index, false),
+                  borderRadius: BorderRadius.circular(12.r),
+                  child: Container(
+                    padding: EdgeInsets.symmetric(vertical: 16.h),
+                    decoration: BoxDecoration(
+                      color: AppColors.accentBlue.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12.r),
+                      border: Border.all(
+                        color: AppColors.accentBlue.withOpacity(0.3),
+                      ),
+                    ),
+                    child: Center(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.close, color: AppColors.accentBlue),
+                          SizedBox(width: 8.w),
+                          Text(
+                            'LOSS',
+                            style: AppTypography.buttonText.copyWith(
+                              color: AppColors.accentBlue,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(width: 16.w),
+              Expanded(
+                child: InkWell(
+                  onTap: () => _onTradeOutcome(index, true),
+                  borderRadius: BorderRadius.circular(12.r),
+                  child: Container(
+                    padding: EdgeInsets.symmetric(vertical: 16.h),
+                    decoration: BoxDecoration(
+                      color: AppColors.success.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12.r),
+                      border: Border.all(
+                        color: AppColors.success.withOpacity(0.3),
+                      ),
+                    ),
+                    child: Center(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.check, color: AppColors.success),
+                          SizedBox(width: 8.w),
+                          Text(
+                            'WIN',
+                            style: AppTypography.buttonText.copyWith(
+                              color: AppColors.success,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildHistoryCard(int index) {
-      final entry = _currentPlan.entries[index];
-      final isWin = entry.status == 'win';
-      
-      return Opacity(
-          opacity: 0.6,
-          child: Container(
-            margin: EdgeInsets.only(bottom: 12.h),
-            padding: EdgeInsets.all(16.r),
-            decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(16.r),
-                border: Border.all(color: isWin ? AppColors.success.withOpacity(0.2) : AppColors.accentBlue.withOpacity(0.2)),
+    final entry = _currentPlan.entries[index];
+    final isWin = entry.status == 'win';
+
+    return Opacity(
+      opacity: 0.6,
+      child: Container(
+        margin: EdgeInsets.only(bottom: 12.h),
+        padding: EdgeInsets.all(16.r),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(
+            color: isWin
+                ? AppColors.success.withOpacity(0.2)
+                : AppColors.accentBlue.withOpacity(0.2),
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 32.r,
+              height: 32.r,
+              decoration: BoxDecoration(
+                color: isWin
+                    ? AppColors.success.withOpacity(0.1)
+                    : AppColors.accentBlue.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Center(
+                child: Text(
+                  '${entry.step}',
+                  style: TextStyle(
+                    color: isWin ? AppColors.success : AppColors.accentBlue,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
             ),
-            child: Row(
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                     Container(
-                        width: 32.r,
-                        height: 32.r,
-                        decoration: BoxDecoration(
-                            color: isWin ? AppColors.success.withOpacity(0.1) : AppColors.accentBlue.withOpacity(0.1),
-                            shape: BoxShape.circle,
-                        ),
-                        child: Center(child: Text('${entry.step}', style: TextStyle(color: isWin ? AppColors.success : AppColors.accentBlue, fontWeight: FontWeight.bold))),
-                     ),
-                     SizedBox(width: 12.w),
-                     Expanded(
-                         child: Column(
-                             crossAxisAlignment: CrossAxisAlignment.start,
-                             children: [
-                                 Text(
-                                     'Invest: ${_currentPlan.currency}${entry.investAmount.toStringAsFixed(2)}',
-                                     style: AppTypography.subHeading.copyWith(fontSize: 14.sp, color: AppColors.textMain),
-                                 ),
-                                 if (entry.isRecovery)
-                                 Text('RECOVERY ROUND', style: TextStyle(fontSize: 10.sp, color: AppColors.accentBlue)),
-                             ],
-                         )
-                     ),
-                     Text(
-                         isWin ? '+${_currentPlan.currency}${entry.potentialProfit.toStringAsFixed(2)}' : '-${_currentPlan.currency}${entry.investAmount.toStringAsFixed(2)}',
-                         style: AppTypography.heading.copyWith(
-                             fontSize: 16.sp,
-                             color: isWin ? AppColors.success : AppColors.accentBlue
-                         ),
-                     )
+                  Text(
+                    'Invest: ${_currentPlan.currency}${entry.investAmount.toStringAsFixed(2)}',
+                    style: AppTypography.subHeading.copyWith(
+                      fontSize: 14.sp,
+                      color: AppColors.textMain,
+                    ),
+                  ),
+                  if (entry.isRecovery)
+                    Text(
+                      'RECOVERY ROUND',
+                      style: TextStyle(
+                        fontSize: 10.sp,
+                        color: AppColors.accentBlue,
+                      ),
+                    ),
                 ],
+              ),
             ),
-          )
-      );
+            Text(
+              isWin
+                  ? '+${_currentPlan.currency}${entry.potentialProfit.toStringAsFixed(2)}'
+                  : '-${_currentPlan.currency}${entry.investAmount.toStringAsFixed(2)}',
+              style: AppTypography.heading.copyWith(
+                fontSize: 16.sp,
+                color: isWin ? AppColors.success : AppColors.accentBlue,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

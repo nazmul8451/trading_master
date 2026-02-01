@@ -5,6 +5,7 @@ import '../../../core/constants/app_typography.dart';
 import '../../controller/trade_controller.dart';
 import '../../model/trade_plan_model.dart';
 import 'trade_plan_screen.dart';
+import '../../service/trade_storage_service.dart';
 
 class TradeSetupScreen extends StatefulWidget {
   const TradeSetupScreen({super.key});
@@ -31,7 +32,7 @@ class _TradeSetupScreenState extends State<TradeSetupScreen> {
     super.dispose();
   }
 
-  void _generatePlan() {
+  Future<void> _generatePlan() async {
     if (_formKey.currentState!.validate()) {
       final balance = double.parse(_balanceController.text);
       final target = double.parse(_targetProfitController.text);
@@ -42,7 +43,7 @@ class _TradeSetupScreenState extends State<TradeSetupScreen> {
         balance: balance,
         payoutPercentage: payout,
       );
-      
+
       final plan = TradePlanModel(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         balance: balance,
@@ -54,11 +55,12 @@ class _TradeSetupScreenState extends State<TradeSetupScreen> {
         entries: entries,
       );
 
+      // Save the initial session to storage
+      await TradeStorageService().saveTradeSession(plan);
+
       Navigator.push(
         context,
-        MaterialPageRoute(
-          builder: (context) => TradePlanScreen(plan: plan),
-        ),
+        MaterialPageRoute(builder: (context) => TradePlanScreen(plan: plan)),
       );
     }
   }
@@ -71,7 +73,11 @@ class _TradeSetupScreenState extends State<TradeSetupScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, color: AppColors.textMain, size: 20.sp),
+          icon: Icon(
+            Icons.arrow_back_ios,
+            color: AppColors.textMain,
+            size: 20.sp,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -139,7 +145,11 @@ class _TradeSetupScreenState extends State<TradeSetupScreen> {
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.info_outline, color: AppColors.primary, size: 24.sp),
+                    Icon(
+                      Icons.info_outline,
+                      color: AppColors.primary,
+                      size: 24.sp,
+                    ),
                     SizedBox(width: 12.w),
                     Expanded(
                       child: Text(
@@ -177,7 +187,11 @@ class _TradeSetupScreenState extends State<TradeSetupScreen> {
                         ),
                       ),
                       SizedBox(width: 8.w),
-                      Icon(Icons.auto_awesome, color: AppColors.textMain, size: 20.sp),
+                      Icon(
+                        Icons.auto_awesome,
+                        color: AppColors.textMain,
+                        size: 20.sp,
+                      ),
                     ],
                   ),
                 ),
@@ -250,7 +264,9 @@ class _TradeSetupScreenState extends State<TradeSetupScreen> {
                   Expanded(
                     child: TextFormField(
                       controller: controller,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
                       style: AppTypography.heading.copyWith(
                         fontSize: 20.sp,
                         color: AppColors.textMain,
@@ -300,13 +316,15 @@ class _TradeSetupScreenState extends State<TradeSetupScreen> {
 
   Widget _buildCurrencyDropdown() {
     return Theme(
-      data: Theme.of(context).copyWith(
-        canvasColor: AppColors.surface,
-      ),
+      data: Theme.of(context).copyWith(canvasColor: AppColors.surface),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: _selectedCurrency,
-          icon: Icon(Icons.keyboard_arrow_down, size: 16.sp, color: AppColors.textBody),
+          icon: Icon(
+            Icons.keyboard_arrow_down,
+            size: 16.sp,
+            color: AppColors.textBody,
+          ),
           items: _currencies.map((String currency) {
             return DropdownMenuItem<String>(
               value: currency,
