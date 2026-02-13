@@ -9,6 +9,7 @@ import '../trade/trade_setup_screen.dart';
 import '../journal/journal_screen.dart';
 import '../plan/goal_plans_library_screen.dart';
 import '../../service/wallet_service.dart';
+import '../settings/settings_screen.dart';
 import 'widgets/side_menu.dart';
 import 'dart:ui';
 
@@ -59,7 +60,7 @@ class DashboardScreenState extends State<DashboardScreen>
     const AnalyticsScreen(),
     const Center(child: Text("Log Trade")),
     const PlaneScreen(),
-    const Center(child: Text("Settings")),
+    const SettingsScreen(),
   ];
 
   void changePageIndex(int index) {
