@@ -2,8 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_typography.dart';
-import '../../model/plan_model.dart';
+import '../../model/trade_plan_model.dart';
+import '../../controller/trade_controller.dart';
 import 'goal_sheet_screen.dart';
+import '../../service/trade_storage_service.dart';
+import '../../../core/widgets/premium_background.dart';
+import '../../../core/widgets/glass_container.dart';
+import '../../../core/widgets/animated_entrance.dart';
 
 class CreatePlanScreen extends StatefulWidget {
   const CreatePlanScreen({super.key});
@@ -29,171 +34,301 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
     super.dispose();
   }
 
-  void _calculateAndNavigate() {
+  Future<void> _calculateAndNavigate() async {
     if (_formKey.currentState!.validate()) {
-      final plan = PlanModel(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        startCapital: double.parse(_capitalController.text),
-        targetPercent: double.parse(_targetController.text),
-        duration: int.parse(_durationController.text),
-        durationType: _durationType,
-        currency: _selectedCurrency,
-        startDate: DateTime.now(),
+      final startCapital = double.parse(_capitalController.text);
+      final targetPercent = double.parse(_targetController.text);
+      final duration = int.parse(_durationController.text);
+
+      final entries = TradeController.calculateCompoundingPlan(
+        startCapital: startCapital,
+        targetPercent: targetPercent,
+        duration: duration,
       );
 
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => GoalSheetScreen(plan: plan),
-        ),
+      final plan = TradePlanModel(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        balance: startCapital,
+        targetProfit: targetPercent,
+        stopLossLimit: 0,
+        payoutPercentage: 82,
+        currency: _selectedCurrency,
+        durationType: _durationType,
+        date: DateTime.now(),
+        entries: entries,
       );
+
+      await TradeStorageService().saveTradeSession(plan);
+
+      if (mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => GoalSheetScreen(plan: plan)),
+        );
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text('Create Trading Plan'),
+        title: Text(
+          'New Trading Plan',
+          style: AppTypography.heading.copyWith(fontSize: 20.sp),
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: true,
+        leading: IconButton(
+          icon: Container(
+            padding: EdgeInsets.all(8.r),
+            decoration: BoxDecoration(
+              color: AppColors.surface.withOpacity(0.5),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.arrow_back_ios_new, size: 18),
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20.w.clamp(16, 24).toDouble()),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                SizedBox(height: 20.h.clamp(16, 24).toDouble()),
-                Text(
-                  'Plan Your Success',
-                  style: AppTypography.heading.copyWith(
-                    fontSize: 24.sp.clamp(20, 28).toDouble(),
+      body: PremiumBackground(
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: 24.w.clamp(20, 32).toDouble(),
+            ),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  SizedBox(height: 100.h), // Spacing for AppBar
+                  AnimatedEntrance(
+                    duration: const Duration(milliseconds: 600),
+                    child: Column(
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(20.r),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withOpacity(0.1),
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.primary.withOpacity(0.2),
+                                blurRadius: 40,
+                                spreadRadius: -5,
+                              ),
+                            ],
+                          ),
+                          child: Icon(
+                            Icons.rocket_launch,
+                            size: 48.sp,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                        SizedBox(height: 24.h),
+                        Text(
+                          'Plan Your Success',
+                          style: AppTypography.heading.copyWith(
+                            fontSize: 32.sp,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -1,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        SizedBox(height: 12.h),
+                        Text(
+                          'Define your trading parameters and visualize the power of compounding.',
+                          style: AppTypography.body.copyWith(
+                            fontSize: 16.sp,
+                            color: AppColors.textBody.withOpacity(0.8),
+                            height: 1.5,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
                   ),
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(height: 8.h.clamp(4, 12).toDouble()),
-                Text(
-                  'Define your trading parameters and start compounding your wealth.',
-                  style: AppTypography.body,
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(height: 32.h.clamp(24, 40).toDouble()),
-                _buildTextField(
-                  controller: _capitalController,
-                  label: 'Starting Capital',
-                  hint: 'e.g., 1000',
-                  prefixIcon: Container(
-                    margin: EdgeInsets.only(right: 8.w),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<String>(
-                        value: _selectedCurrency,
-                        dropdownColor: AppColors.surface,
-                        padding: EdgeInsets.zero,
-                        icon: Icon(Icons.keyboard_arrow_down, size: 16.sp, color: AppColors.textBody),
-                        items: _currencies.map((String currency) {
-                          return DropdownMenuItem<String>(
-                            value: currency,
-                            child: Text(
-                              currency,
+                  SizedBox(height: 48.h),
+
+                  // Inputs
+                  AnimatedEntrance(
+                    delay: const Duration(milliseconds: 200),
+                    child: GlassContainer(
+                      padding: EdgeInsets.all(24.r),
+                      borderRadius: 24.r,
+                      color: AppColors.surface.withOpacity(0.4),
+                      border: Border.all(color: Colors.white.withOpacity(0.08)),
+                      child: Column(
+                        children: [
+                          _buildFieldContainer(
+                            label: 'Starting Capital',
+                            child: Row(
+                              children: [
+                                _buildCurrencyDropdown(),
+                                Expanded(
+                                  child: TextFormField(
+                                    controller: _capitalController,
+                                    style: AppTypography.heading.copyWith(
+                                      fontSize: 24.sp,
+                                    ),
+                                    keyboardType:
+                                        const TextInputType.numberWithOptions(
+                                          decimal: true,
+                                        ),
+                                    validator: (val) =>
+                                        val!.isEmpty ? 'Required' : null,
+                                    decoration: _slimmestInputDecoration(
+                                      '1000',
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Divider(
+                            color: Colors.white.withOpacity(0.05),
+                            height: 32.h,
+                          ),
+                          _buildFieldContainer(
+                            label: 'Daily Target (%)',
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.pie_chart,
+                                  color: AppColors.accentBlue,
+                                  size: 20.sp,
+                                ),
+                                SizedBox(width: 12.w),
+                                Expanded(
+                                  child: TextFormField(
+                                    controller: _targetController,
+                                    style: AppTypography.heading.copyWith(
+                                      fontSize: 24.sp,
+                                    ),
+                                    keyboardType:
+                                        const TextInputType.numberWithOptions(
+                                          decimal: true,
+                                        ),
+                                    validator: (val) =>
+                                        val!.isEmpty ? 'Required' : null,
+                                    decoration: _slimmestInputDecoration('2.5'),
+                                  ),
+                                ),
+                                Text(
+                                  '%',
+                                  style: AppTypography.heading.copyWith(
+                                    fontSize: 24.sp,
+                                    color: AppColors.textBody,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Divider(
+                            color: Colors.white.withOpacity(0.05),
+                            height: 32.h,
+                          ),
+                          Row(
+                            children: [
+                              Expanded(
+                                flex: 3,
+                                child: _buildFieldContainer(
+                                  label: 'Duration',
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.timer,
+                                        color: AppColors.success,
+                                        size: 20.sp,
+                                      ),
+                                      SizedBox(width: 12.w),
+                                      Expanded(
+                                        child: TextFormField(
+                                          controller: _durationController,
+                                          style: AppTypography.heading.copyWith(
+                                            fontSize: 24.sp,
+                                          ),
+                                          keyboardType: TextInputType.number,
+                                          validator: (val) =>
+                                              val!.isEmpty ? 'Required' : null,
+                                          decoration: _slimmestInputDecoration(
+                                            '30',
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              SizedBox(width: 16.w),
+                              Expanded(
+                                flex: 2,
+                                child: _buildDurationTypeDropdown(),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  SizedBox(height: 40.h),
+
+                  // Action Button
+                  AnimatedEntrance(
+                    delay: const Duration(milliseconds: 400),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(20.r),
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF2369FF), Color(0xFF0044D6)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF2369FF).withOpacity(0.4),
+                            blurRadius: 20,
+                            offset: const Offset(0, 10),
+                          ),
+                        ],
+                      ),
+                      child: ElevatedButton(
+                        onPressed: _calculateAndNavigate,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          foregroundColor: Colors.white,
+                          shadowColor: Colors.transparent,
+                          padding: EdgeInsets.symmetric(vertical: 22.h),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20.r),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Generate Blueprint',
                               style: AppTypography.buttonText.copyWith(
-                                fontSize: 14.sp,
-                                color: AppColors.textMain,
+                                fontSize: 18.sp,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.5,
                               ),
                             ),
-                          );
-                        }).toList(),
-                        onChanged: (String? newValue) {
-                          if (newValue != null) {
-                            setState(() {
-                              _selectedCurrency = newValue;
-                            });
-                          }
-                        },
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(height: 16.h.clamp(12, 20).toDouble()),
-                _buildTextField(
-                  controller: _targetController,
-                  label: 'Target Profit (%)',
-                  hint: 'e.g., 2',
-                ),
-                SizedBox(height: 16.h.clamp(12, 20).toDouble()),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      flex: 1,
-                      child: _buildTextField(
-                        controller: _durationController,
-                        label: 'Duration',
-                        hint: 'e.g., 30',
-                        isInteger: true,
-                      ),
-                    ),
-                    SizedBox(width: 16.w.clamp(12, 20).toDouble()),
-                    Expanded(
-                      flex: 1,
-                      child: DropdownButtonFormField<String>(
-                        value: _durationType,
-                        dropdownColor: AppColors.surface,
-                        style: AppTypography.buttonText.copyWith(
-                          fontSize: 14.sp.clamp(12, 16).toDouble(),
+                            SizedBox(width: 8.w),
+                            const Icon(Icons.arrow_forward_rounded),
+                          ],
                         ),
-                        decoration: InputDecoration(
-                          labelText: 'Type',
-                          labelStyle: AppTypography.body.copyWith(
-                            fontSize: 12.sp.clamp(10, 14).toDouble(),
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12.r.clamp(8, 16).toDouble()),
-                            borderSide: const BorderSide(color: AppColors.border),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12.r.clamp(8, 16).toDouble()),
-                            borderSide: const BorderSide(color: AppColors.border),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12.r.clamp(8, 16).toDouble()),
-                            borderSide: const BorderSide(color: AppColors.primary, width: 2),
-                          ),
-                          filled: true,
-                          fillColor: AppColors.surface,
-                          contentPadding: EdgeInsets.symmetric(
-                            horizontal: 16.w.clamp(12, 20).toDouble(),
-                            vertical: 16.h.clamp(12, 20).toDouble(),
-                          ),
-                        ),
-                        items: ['Days', 'Weeks', 'Months']
-                            .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                            .toList(),
-                        onChanged: (val) => setState(() => _durationType = val!),
                       ),
                     ),
-                  ],
-                ),
-                SizedBox(height: 48.h.clamp(32, 64).toDouble()),
-                ElevatedButton(
-                  onPressed: _calculateAndNavigate,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: AppColors.textMain,
-                    minimumSize: Size(double.infinity, 54.h.clamp(46, 60).toDouble()),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.r.clamp(8, 16).toDouble()),
-                    ),
-                    elevation: 0,
                   ),
-                  child: Text(
-                    'Create Plan',
-                    style: AppTypography.buttonText,
-                  ),
-                ),
-                SizedBox(height: 20.h.clamp(16, 24).toDouble()),
-              ],
+                  SizedBox(height: 40.h),
+                ],
+              ),
             ),
           ),
         ),
@@ -201,59 +336,102 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
     );
   }
 
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String label,
-    required String hint,
-    bool isInteger = false,
-    Widget? prefixIcon,
-  }) {
-    return TextFormField(
-      controller: controller,
-      style: AppTypography.buttonText.copyWith(
-        fontSize: 14.sp.clamp(12, 16).toDouble(),
+  InputDecoration _slimmestInputDecoration(String hint) {
+    return InputDecoration(
+      hintText: hint,
+      hintStyle: AppTypography.heading.copyWith(
+        fontSize: 24.sp,
+        color: AppColors.textBody.withOpacity(0.2),
       ),
-      keyboardType:
-          TextInputType.numberWithOptions(decimal: !isInteger),
-      validator: (value) {
-        if (value == null || value.isEmpty) return 'Required';
-        if (double.tryParse(value) == null) return 'Invalid number';
-        return null;
-      },
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: AppTypography.body.copyWith(
-          fontSize: 12.sp.clamp(10, 14).toDouble(),
+      border: InputBorder.none,
+      focusedBorder: InputBorder.none,
+      enabledBorder: InputBorder.none,
+      errorBorder: InputBorder.none,
+      disabledBorder: InputBorder.none,
+      contentPadding: EdgeInsets.zero,
+      isDense: true,
+    );
+  }
+
+  Widget _buildFieldContainer({required String label, required Widget child}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label.toUpperCase(),
+          style: AppTypography.label.copyWith(
+            fontSize: 10.sp,
+            color: AppColors.textBody.withOpacity(0.7),
+            fontWeight: FontWeight.w700,
+            letterSpacing: 1.2,
+          ),
         ),
-        hintText: hint,
-        hintStyle: AppTypography.body.copyWith(
-          fontSize: 14.sp.clamp(12, 16).toDouble(),
-          color: AppColors.textBody.withValues(alpha: 0.5),
+        SizedBox(height: 8.h),
+        child,
+      ],
+    );
+  }
+
+  Widget _buildCurrencyDropdown() {
+    return DropdownButtonHideUnderline(
+      child: DropdownButton<String>(
+        value: _selectedCurrency,
+        dropdownColor: AppColors.surface,
+        icon: Icon(
+          Icons.keyboard_arrow_down,
+          size: 16.sp,
+          color: AppColors.textBody,
         ),
-        prefixIcon: prefixIcon != null
-            ? Padding(
-                padding: EdgeInsets.symmetric(horizontal: 12.w),
-                child: prefixIcon,
-              )
-            : null,
-        prefixIconConstraints: BoxConstraints(minWidth: 0, minHeight: 0),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12.r.clamp(8, 16).toDouble()),
-          borderSide: const BorderSide(color: AppColors.border),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12.r.clamp(8, 16).toDouble()),
-          borderSide: const BorderSide(color: AppColors.border),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12.r.clamp(8, 16).toDouble()),
-          borderSide: const BorderSide(color: AppColors.primary, width: 2),
-        ),
-        filled: true,
-        fillColor: AppColors.surface,
-        contentPadding: EdgeInsets.symmetric(
-          horizontal: 16.w.clamp(12, 20).toDouble(),
-          vertical: 16.h.clamp(12, 20).toDouble(),
+        style: AppTypography.heading.copyWith(fontSize: 24.sp),
+        items: _currencies.map((String currency) {
+          return DropdownMenuItem<String>(
+            value: currency,
+            child: Text(currency),
+          );
+        }).toList(),
+        onChanged: (String? newValue) {
+          if (newValue != null) {
+            setState(() {
+              _selectedCurrency = newValue;
+            });
+          }
+        },
+      ),
+    );
+  }
+
+  Widget _buildDurationTypeDropdown() {
+    return Container(
+      height: 60.h,
+      padding: EdgeInsets.symmetric(horizontal: 16.w),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: Colors.white.withOpacity(0.05)),
+      ),
+      child: Center(
+        child: DropdownButtonHideUnderline(
+          child: DropdownButton<String>(
+            value: _durationType,
+            isExpanded: true,
+            dropdownColor: AppColors.surface,
+            icon: Icon(
+              Icons.keyboard_arrow_down,
+              color: AppColors.textBody,
+              size: 20.sp,
+            ),
+            style: AppTypography.body.copyWith(
+              fontSize: 14.sp,
+              color: AppColors.textMain,
+              fontWeight: FontWeight.bold,
+            ),
+            items: [
+              'Days',
+              'Weeks',
+              'Months',
+            ].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+            onChanged: (val) => setState(() => _durationType = val!),
+          ),
         ),
       ),
     );

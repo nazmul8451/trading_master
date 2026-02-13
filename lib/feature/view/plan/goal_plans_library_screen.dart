@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_typography.dart';
-import '../../service/plan_storage_service.dart';
-import '../../model/plan_model.dart';
-import '../../controller/plan_controller.dart';
+import '../../service/trade_storage_service.dart';
+import '../../model/trade_plan_model.dart';
 import 'goal_plan_detail_screen.dart';
+import '../../../core/widgets/premium_background.dart';
+import '../../../core/widgets/glass_container.dart';
+import '../../../core/widgets/animated_entrance.dart';
 
 class GoalPlansLibraryScreen extends StatefulWidget {
   const GoalPlansLibraryScreen({super.key});
@@ -14,129 +16,180 @@ class GoalPlansLibraryScreen extends StatefulWidget {
   State<GoalPlansLibraryScreen> createState() => _GoalPlansLibraryScreenState();
 }
 
-class _GoalPlansLibraryScreenState extends State<GoalPlansLibraryScreen> {
-  final PlanStorageService _storage = PlanStorageService();
-  String _selectedFilter = 'Days';
-  List<PlanModel> _plans = [];
+class _GoalPlansLibraryScreenState extends State<GoalPlansLibraryScreen>
+    with SingleTickerProviderStateMixin {
+  final TradeStorageService _storage = TradeStorageService();
+  List<TradePlanModel> _allPlans = [];
+  List<TradePlanModel> _filteredPlans = [];
   bool _isLoading = true;
   bool _isSelectionMode = false;
   Set<String> _selectedPlanIds = {};
+  late TabController _tabController;
+
+  final List<String> _tabs = ['All', 'Days', 'Weeks', 'Months'];
 
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: _tabs.length, vsync: this);
+    _tabController.addListener(_handleTabSelection);
     _loadPlans();
   }
 
+  @override
+  void dispose() {
+    _tabController.removeListener(_handleTabSelection);
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  void _handleTabSelection() {
+    if (_tabController.indexIsChanging) {
+      _filterPlans();
+    }
+  }
+
   Future<void> _loadPlans() async {
+    setState(() => _isLoading = true);
+    await Future.delayed(const Duration(milliseconds: 300));
+    final allPlans = _storage.getAllTradeSessions();
+    allPlans.sort((a, b) => b.date.compareTo(a.date));
+
+    if (mounted) {
+      setState(() {
+        _allPlans = allPlans;
+        _isLoading = false;
+      });
+      _filterPlans();
+    }
+  }
+
+  void _filterPlans() {
+    final selectedTab = _tabs[_tabController.index];
     setState(() {
-      _isLoading = true;
-    });
-    
-    // Simulate loading delay to show progress indicator
-    await Future.delayed(const Duration(milliseconds: 500));
-    
-    setState(() {
-      _plans = _storage.getPlansByType(_selectedFilter);
-      _isLoading = false;
+      if (selectedTab == 'All') {
+        _filteredPlans = _allPlans;
+      } else {
+        _filteredPlans = _allPlans
+            .where((plan) => plan.durationType == selectedTab)
+            .toList();
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        leading: _isSelectionMode
-            ? IconButton(
-                icon: const Icon(Icons.close),
-                onPressed: _exitSelectionMode,
-              )
-            : null,
         title: Text(
-          _isSelectionMode
-              ? '${_selectedPlanIds.length} selected'
-              : 'Goal Plans Library',
+          _isSelectionMode ? '${_selectedPlanIds.length} Selected' : 'Library',
+          style: AppTypography.heading.copyWith(fontSize: 20.sp),
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: Container(
+            padding: EdgeInsets.all(8.r),
+            decoration: BoxDecoration(
+              color: AppColors.surface.withOpacity(0.5),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              _isSelectionMode ? Icons.close : Icons.arrow_back_ios_new,
+              size: 18,
+            ),
+          ),
+          onPressed: () =>
+              _isSelectionMode ? _exitSelectionMode() : Navigator.pop(context),
         ),
         actions: _isSelectionMode
             ? [
                 IconButton(
-                  icon: const Icon(Icons.delete_outline),
-                  onPressed: _selectedPlanIds.isEmpty ? null : _showDeleteConfirmation,
+                  icon: const Icon(
+                    Icons.delete_outline,
+                    color: AppColors.error,
+                  ),
+                  onPressed: _selectedPlanIds.isEmpty
+                      ? null
+                      : _showDeleteConfirmation,
                 ),
               ]
             : null,
+        bottom: PreferredSize(
+          preferredSize: Size.fromHeight(60.h),
+          child: _buildTabBar(),
+        ),
       ),
-      body: SafeArea(
+      body: PremiumBackground(
         child: _isLoading
             ? _buildLoadingState()
-            : SingleChildScrollView(
-                padding: EdgeInsets.symmetric(horizontal: 20.w.clamp(16, 24).toDouble()),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(height: 16.h.clamp(12, 20).toDouble()),
-                    _buildFilterTabs(),
-                    SizedBox(height: 16.h.clamp(12, 20).toDouble()),
-                    _plans.isEmpty
-                        ? _buildEmptyState()
-                        : ListView.builder(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemCount: _plans.length,
-                            itemBuilder: (context, index) {
-                              return _buildPlanCard(_plans[index], index);
-                            },
-                          ),
-                    SizedBox(height: 24.h.clamp(20, 32).toDouble()),
-                  ],
-                ),
+            : _filteredPlans.isEmpty
+            ? _buildEmptyState()
+            : ListView.builder(
+                padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 100.h),
+                itemCount: _filteredPlans.length,
+                itemBuilder: (context, index) {
+                  return AnimatedEntrance(
+                    delay: Duration(milliseconds: 50 * index),
+                    child: _buildPlanCard(_filteredPlans[index]),
+                  );
+                },
               ),
       ),
     );
   }
 
-  Widget _buildFilterTabs() {
-    return Row(
-      children: [
-        _buildFilterTab('Days', 'Daily'),
-        SizedBox(width: 12.w.clamp(8, 16).toDouble()),
-        _buildFilterTab('Weeks', 'Weekly'),
-        SizedBox(width: 12.w.clamp(8, 16).toDouble()),
-        _buildFilterTab('Months', 'Monthly'),
-      ],
-    );
-  }
-
-  Widget _buildFilterTab(String type, String label) {
-    final isSelected = _selectedFilter == type;
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedFilter = type;
-          _loadPlans();
-        });
-      },
-      child: Container(
-        padding: EdgeInsets.symmetric(
-          horizontal: 16.w.clamp(12, 20).toDouble(),
-          vertical: 8.h.clamp(6, 12).toDouble(),
-        ),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary : AppColors.surface,
-          borderRadius: BorderRadius.circular(8.r.clamp(6, 12).toDouble()),
-          border: Border.all(
-            color: isSelected ? AppColors.primary : AppColors.border,
+  Widget _buildTabBar() {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+      height: 56.h,
+      padding: EdgeInsets.all(4.r),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E222D).withOpacity(0.5),
+        borderRadius: BorderRadius.circular(30.r),
+        border: Border.all(color: Colors.white.withOpacity(0.08)),
+      ),
+      child: TabBar(
+        controller: _tabController,
+        indicator: BoxDecoration(
+          borderRadius: BorderRadius.circular(26.r),
+          gradient: const LinearGradient(
+            colors: [AppColors.primary, Color(0xFF3B82F6)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withOpacity(0.4),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
-        child: Text(
-          label,
-          style: AppTypography.buttonText.copyWith(
-            fontSize: 14.sp.clamp(12, 16).toDouble(),
-            color: isSelected ? AppColors.textMain : AppColors.textBody,
-          ),
+        labelColor: Colors.white,
+        unselectedLabelColor: AppColors.textBody.withOpacity(0.7),
+        labelStyle: AppTypography.buttonText.copyWith(
+          fontSize: 14.sp,
+          fontWeight: FontWeight.w600,
+          fontFamily: 'Roboto', // Ensure consistent premium font if applicable
         ),
+        unselectedLabelStyle: AppTypography.body.copyWith(
+          fontSize: 14.sp,
+          fontWeight: FontWeight.w500,
+        ),
+        tabs: _tabs
+            .map(
+              (tab) => Tab(
+                height: 48.h,
+                child: Center(child: Text(tab, textAlign: TextAlign.center)),
+              ),
+            )
+            .toList(),
+        splashBorderRadius: BorderRadius.circular(26.r),
+        dividerColor: Colors.transparent,
+        indicatorSize: TabBarIndicatorSize.tab,
       ),
     );
   }
@@ -146,22 +199,14 @@ class _GoalPlansLibraryScreenState extends State<GoalPlansLibraryScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          SizedBox(
-            width: 60.w.clamp(50, 70).toDouble(),
-            height: 60.h.clamp(50, 70).toDouble(),
-            child: CircularProgressIndicator(
-              strokeWidth: 4.w.clamp(3, 5).toDouble(),
-              valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
-              backgroundColor: AppColors.primary.withValues(alpha: 0.2),
-            ),
+          CircularProgressIndicator(
+            color: AppColors.primary,
+            backgroundColor: AppColors.primary.withOpacity(0.2),
           ),
-          SizedBox(height: 24.h.clamp(20, 28).toDouble()),
+          SizedBox(height: 16.h),
           Text(
-            'Loading your plans...',
-            style: AppTypography.body.copyWith(
-              fontSize: 14.sp.clamp(12, 16).toDouble(),
-              color: AppColors.textBody,
-            ),
+            'Loading Plans...',
+            style: AppTypography.body.copyWith(color: AppColors.textBody),
           ),
         ],
       ),
@@ -169,238 +214,204 @@ class _GoalPlansLibraryScreenState extends State<GoalPlansLibraryScreen> {
   }
 
   Widget _buildEmptyState() {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.6,
-      alignment: Alignment.center,
+    return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            padding: EdgeInsets.all(24.r.clamp(20, 28).toDouble()),
+            padding: EdgeInsets.all(24.r),
             decoration: BoxDecoration(
-              color: AppColors.surface,
+              color: AppColors.surface.withOpacity(0.5),
               shape: BoxShape.circle,
-              border: Border.all(
-                color: AppColors.border,
-                width: 2,
-              ),
+              border: Border.all(color: Colors.white.withOpacity(0.1)),
             ),
             child: Icon(
-              Icons.track_changes_outlined,
-              size: 64.sp.clamp(56, 72).toDouble(),
-              color: AppColors.primary.withValues(alpha: 0.5),
+              Icons.folder_open_outlined,
+              size: 48.sp,
+              color: AppColors.textBody.withOpacity(0.5),
             ),
           ),
-          SizedBox(height: 24.h.clamp(20, 28).toDouble()),
+          SizedBox(height: 16.h),
           Text(
-            'No ${_selectedFilter.toLowerCase()} plans yet',
-            style: AppTypography.subHeading.copyWith(
-              fontSize: 18.sp.clamp(16, 20).toDouble(),
-              color: AppColors.textMain,
-            ),
-          ),
-          SizedBox(height: 8.h.clamp(6, 10).toDouble()),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 40.w.clamp(32, 48).toDouble()),
-            child: Text(
-              'Create your first goal plan to start tracking your trading journey',
-              textAlign: TextAlign.center,
-              style: AppTypography.body.copyWith(
-                fontSize: 14.sp.clamp(12, 16).toDouble(),
-                color: AppColors.textBody,
-                height: 1.5,
-              ),
-            ),
+            'No Plans Found',
+            style: AppTypography.subHeading.copyWith(color: AppColors.textBody),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildPlanCard(PlanModel plan, int index) {
-    final entries = PlanController.calculatePlan(plan);
-    final finalBalance = entries.last.endBalance;
-    final currentProgress = ((finalBalance - plan.startCapital) / plan.startCapital * 100);
+  Widget _buildPlanCard(TradePlanModel plan) {
+    final completedEntries = plan.entries
+        .where((e) => e.status != 'pending')
+        .length;
+    final totalEntries = plan.entries.length;
+    final double progress = totalEntries > 0
+        ? (completedEntries / totalEntries)
+        : 0;
     final isSelected = _selectedPlanIds.contains(plan.id);
 
     return GestureDetector(
-      onLongPress: () {
-        _enterSelectionMode(plan.id);
-      },
+      onLongPress: () => _enterSelectionMode(plan.id),
       onTap: () {
         if (_isSelectionMode) {
           _toggleSelection(plan.id);
+        } else {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => GoalPlanDetailScreen(plan: plan),
+            ),
+          );
         }
       },
-      child: Container(
-        margin: EdgeInsets.only(bottom: 16.h.clamp(12, 20).toDouble()),
-        padding: EdgeInsets.all(16.r.clamp(12, 20).toDouble()),
-        decoration: BoxDecoration(
-          color: isSelected 
-              ? AppColors.primary.withValues(alpha: 0.1)
-              : AppColors.surface,
-          borderRadius: BorderRadius.circular(16.r.clamp(12, 20).toDouble()),
-          border: Border.all(
-            color: isSelected ? AppColors.primary : AppColors.border,
-            width: isSelected ? 2 : 1,
-          ),
+      child: GlassContainer(
+        margin: EdgeInsets.only(bottom: 16.h),
+        padding: EdgeInsets.all(20.r),
+        borderRadius: 20.r,
+        color: isSelected
+            ? AppColors.primary.withOpacity(0.2)
+            : Colors.white.withOpacity(0.03),
+        border: Border.all(
+          color: isSelected
+              ? AppColors.primary
+              : Colors.white.withOpacity(0.05),
         ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Column(
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      '${plan.targetPercent}% ${plan.durationType} Target',
-                      style: AppTypography.subHeading.copyWith(
-                        fontSize: 16.sp.clamp(14, 18).toDouble(),
-                      ),
+                    Row(
+                      children: [
+                        Text(
+                          '${plan.targetProfit}% Daily',
+                          style: AppTypography.heading.copyWith(
+                            fontSize: 18.sp,
+                          ),
+                        ),
+                        SizedBox(width: 8.w),
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 8.w,
+                            vertical: 4.h,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.accentBlue.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(8.r),
+                          ),
+                          child: Text(
+                            plan.durationType.toUpperCase(),
+                            style: AppTypography.label.copyWith(
+                              fontSize: 10.sp,
+                              color: AppColors.accentBlue,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    SizedBox(height: 4.h.clamp(2, 6).toDouble()),
+                    SizedBox(height: 6.h),
                     Text(
-                      'Compounding • ${plan.duration} ${plan.durationType}',
+                      '${plan.entries.length} Steps • ${plan.currency}${plan.balance.toStringAsFixed(0)} Capital',
                       style: AppTypography.body.copyWith(
-                        fontSize: 12.sp.clamp(10, 14).toDouble(),
-                        color: AppColors.textBody,
+                        fontSize: 13.sp,
+                        color: AppColors.textBody.withOpacity(0.8),
                       ),
                     ),
                   ],
                 ),
-              ),
-              _isSelectionMode
-                  ? Checkbox(
-                      value: isSelected,
-                      onChanged: (value) {
-                        _toggleSelection(plan.id);
-                      },
-                      activeColor: AppColors.primary,
-                    )
-                  : Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 8.w.clamp(6, 12).toDouble(),
-                        vertical: 4.h.clamp(2, 6).toDouble(),
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(6.r.clamp(4, 8).toDouble()),
-                      ),
-                      child: Text(
-                        'ACTIVE',
-                        style: AppTypography.body.copyWith(
-                          fontSize: 10.sp.clamp(8, 12).toDouble(),
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-            ],
-          ),
-          SizedBox(height: 16.h.clamp(12, 20).toDouble()),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _buildStatColumn('STARTING CAPITAL', '${plan.currency}${plan.startCapital.toStringAsFixed(2)}'),
-              _buildStatColumn('CURRENT PROGRESS', '${currentProgress.toStringAsFixed(1)}%', 
-                color: AppColors.accentBlue),
-            ],
-          ),
-          SizedBox(height: 12.h.clamp(8, 16).toDouble()),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Day 1 / ${plan.duration}',
-                style: AppTypography.body.copyWith(
-                  fontSize: 12.sp.clamp(10, 14).toDouble(),
-                  color: AppColors.textBody,
-                ),
-              ),
-              Text(
-                'Goal: ${plan.currency}${finalBalance.toStringAsFixed(2)}',
-                style: AppTypography.body.copyWith(
-                  fontSize: 12.sp.clamp(10, 14).toDouble(),
-                  color: AppColors.textBody,
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 16.h.clamp(12, 20).toDouble()),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: _isSelectionMode ? null : () async {
-                await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => GoalPlanDetailScreen(plan: plan),
-                  ),
-                );
-                _loadPlans();
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _isSelectionMode 
-                    ? AppColors.surface 
-                    : AppColors.primary,
-                foregroundColor: _isSelectionMode 
-                    ? AppColors.textBody 
-                    : AppColors.textMain,
-                padding: EdgeInsets.symmetric(
-                  vertical: 12.h.clamp(10, 14).toDouble(),
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.r.clamp(6, 10).toDouble()),
-                ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'View Details',
-                    style: AppTypography.buttonText.copyWith(
-                      fontSize: 14.sp.clamp(12, 16).toDouble(),
-                    ),
-                  ),
-                  SizedBox(width: 8.w.clamp(6, 10).toDouble()),
+                if (_isSelectionMode)
+                  Checkbox(
+                    value: isSelected,
+                    onChanged: (_) => _toggleSelection(plan.id),
+                    activeColor: AppColors.primary,
+                    shape: CircleBorder(),
+                  )
+                else
                   Icon(
-                    Icons.arrow_forward,
-                    size: 16.sp.clamp(14, 18).toDouble(),
+                    Icons.chevron_right,
+                    color: AppColors.textBody.withOpacity(0.5),
                   ),
-                ],
-              ),
+              ],
             ),
-          ),
-        ],
-      ),
-      ),
-    );
-  }
-
-  Widget _buildStatColumn(String label, String value, {Color? color}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: AppTypography.body.copyWith(
-            fontSize: 10.sp.clamp(8, 12).toDouble(),
-            color: AppColors.textBody,
-            letterSpacing: 0.5,
-          ),
+            SizedBox(height: 20.h),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Progress',
+                      style: AppTypography.label.copyWith(
+                        color: AppColors.textBody,
+                      ),
+                    ),
+                    Text(
+                      '${(progress * 100).toInt()}%',
+                      style: AppTypography.label.copyWith(
+                        color: progress == 1
+                            ? AppColors.success
+                            : AppColors.primary,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 8.h),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(4.r),
+                  child: LinearProgressIndicator(
+                    value: progress,
+                    backgroundColor: Colors.white.withOpacity(0.1),
+                    valueColor: AlwaysStoppedAnimation(
+                      progress == 1 ? AppColors.success : AppColors.primary,
+                    ),
+                    minHeight: 6.h,
+                  ),
+                ),
+              ],
+            ),
+            if (!_isSelectionMode) ...[
+              SizedBox(height: 20.h),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => GoalPlanDetailScreen(plan: plan),
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary.withOpacity(0.1),
+                    foregroundColor: AppColors.primary,
+                    shadowColor: Colors.transparent,
+                    padding: EdgeInsets.symmetric(vertical: 12.h),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                      side: BorderSide(
+                        color: AppColors.primary.withOpacity(0.3),
+                      ),
+                    ),
+                  ),
+                  child: Text(
+                    'Continue Plan',
+                    style: AppTypography.buttonText.copyWith(
+                      color: AppColors.primary,
+                      fontSize: 14.sp,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ],
         ),
-        SizedBox(height: 4.h.clamp(2, 6).toDouble()),
-        Text(
-          value,
-          style: AppTypography.buttonText.copyWith(
-            fontSize: 18.sp.clamp(16, 22).toDouble(),
-            color: color ?? AppColors.textMain,
-          ),
-        ),
-      ],
+      ),
     );
   }
 
@@ -422,9 +433,7 @@ class _GoalPlansLibraryScreenState extends State<GoalPlansLibraryScreen> {
     setState(() {
       if (_selectedPlanIds.contains(planId)) {
         _selectedPlanIds.remove(planId);
-        if (_selectedPlanIds.isEmpty) {
-          _isSelectionMode = false;
-        }
+        if (_selectedPlanIds.isEmpty) _isSelectionMode = false;
       } else {
         _selectedPlanIds.add(planId);
       }
@@ -438,20 +447,15 @@ class _GoalPlansLibraryScreenState extends State<GoalPlansLibraryScreen> {
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16.r.clamp(12, 20).toDouble()),
+          borderRadius: BorderRadius.circular(20.r),
         ),
         title: Text(
-          'Delete Plan${count > 1 ? 's' : ''}?',
-          style: AppTypography.subHeading.copyWith(
-            fontSize: 18.sp.clamp(16, 20).toDouble(),
-          ),
+          'Delete Plans?',
+          style: AppTypography.heading.copyWith(fontSize: 20.sp),
         ),
         content: Text(
-          'Are you sure you want to delete $count plan${count > 1 ? 's' : ''}? This action cannot be undone.',
-          style: AppTypography.body.copyWith(
-            fontSize: 14.sp.clamp(12, 16).toDouble(),
-            color: AppColors.textBody,
-          ),
+          'Are you sure you want to delete $count plan(s)? This cannot be undone.',
+          style: AppTypography.body.copyWith(color: AppColors.textBody),
         ),
         actions: [
           TextButton(
@@ -459,58 +463,25 @@ class _GoalPlansLibraryScreenState extends State<GoalPlansLibraryScreen> {
             child: Text(
               'Cancel',
               style: AppTypography.buttonText.copyWith(
-                fontSize: 14.sp.clamp(12, 16).toDouble(),
                 color: AppColors.textBody,
               ),
             ),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8.r.clamp(6, 10).toDouble()),
-              ),
-            ),
-            child: Text(
-              'Delete',
-              style: AppTypography.buttonText.copyWith(
-                fontSize: 14.sp.clamp(12, 16).toDouble(),
-              ),
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
+            child: Text('Delete', style: AppTypography.buttonText),
           ),
         ],
       ),
     );
 
     if (result == true) {
-      await _deleteSelectedPlans();
-    }
-  }
-
-  Future<void> _deleteSelectedPlans() async {
-    final count = _selectedPlanIds.length;
-    await _storage.deletePlansByIds(_selectedPlanIds.toList());
-    _exitSelectionMode();
-    await _loadPlans();
-    
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            '$count plan${count > 1 ? 's' : ''} deleted successfully',
-            style: AppTypography.body.copyWith(
-              color: Colors.white,
-            ),
-          ),
-          backgroundColor: AppColors.primary,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8.r.clamp(6, 10).toDouble()),
-          ),
-        ),
-      );
+      for (var id in _selectedPlanIds) {
+        await _storage.deleteSession(id);
+      }
+      _exitSelectionMode();
+      _loadPlans();
     }
   }
 }

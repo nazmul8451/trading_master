@@ -66,6 +66,7 @@ class TradePlanModel {
   final double stopLossLimit;
   final double payoutPercentage;
   final String currency;
+  final String durationType;
   final DateTime date;
   final List<TradeEntryModel> entries;
 
@@ -76,6 +77,7 @@ class TradePlanModel {
     required this.stopLossLimit,
     required this.payoutPercentage,
     required this.currency,
+    this.durationType = 'Days',
     required this.date,
     required this.entries,
   });
@@ -88,6 +90,7 @@ class TradePlanModel {
       'stopLossLimit': stopLossLimit,
       'payoutPercentage': payoutPercentage,
       'currency': currency,
+      'durationType': durationType,
       'date': date.toIso8601String(),
       'entries': entries.map((e) => e.toJson()).toList(),
     };
@@ -101,6 +104,7 @@ class TradePlanModel {
       stopLossLimit: (json['stopLossLimit'] as num).toDouble(),
       payoutPercentage: (json['payoutPercentage'] as num?)?.toDouble() ?? 82.0,
       currency: json['currency'] ?? '\$',
+      durationType: json['durationType'] ?? 'Days',
       date: DateTime.parse(json['date']),
       entries: (json['entries'] as List)
           .map((e) => TradeEntryModel.fromJson(e))

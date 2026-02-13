@@ -3,9 +3,18 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../dashboard_screen.dart';
+import '../../journal/journal_screen.dart';
+import '../../plan/goal_plans_library_screen.dart';
 
 class SideMenu extends StatelessWidget {
-  const SideMenu({super.key});
+  final int selectedIndex;
+  final Function(int) onTabSelected;
+
+  const SideMenu({
+    super.key,
+    required this.selectedIndex,
+    required this.onTabSelected,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -14,9 +23,7 @@ class SideMenu extends StatelessWidget {
       body: Container(
         width: 288.w,
         height: double.infinity,
-        decoration: const BoxDecoration(
-          color: Color(0xFF1E222D),
-        ),
+        decoration: const BoxDecoration(color: Color(0xFF1E222D)),
         child: SafeArea(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -32,9 +39,27 @@ class SideMenu extends StatelessWidget {
                         padding: EdgeInsets.only(left: 24.w),
                         child: Column(
                           children: [
-                            _buildDrawerItem(context, Icons.home_outlined, "Dashboard", true),
-                            _buildDrawerItem(context, Icons.bar_chart_outlined, "Analytics", false),
-                            _buildDrawerItem(context, Icons.people_outline, "Contacts", false),
+                            _buildDrawerItem(
+                              context: context,
+                              icon: Icons.dashboard_rounded,
+                              title: "Dashboard",
+                              isActive: selectedIndex == 0,
+                              onTap: () => onTabSelected(0),
+                            ),
+                            _buildDrawerItem(
+                              context: context,
+                              icon: Icons.bar_chart_rounded,
+                              title: "Analytics",
+                              isActive: selectedIndex == 1,
+                              onTap: () => onTabSelected(1),
+                            ),
+                            _buildDrawerItem(
+                              context: context,
+                              icon: Icons.rocket_launch_rounded,
+                              title: "Start Plan",
+                              isActive: selectedIndex == 3,
+                              onTap: () => onTabSelected(3),
+                            ),
                           ],
                         ),
                       ),
@@ -43,8 +68,54 @@ class SideMenu extends StatelessWidget {
                         padding: EdgeInsets.only(left: 24.w),
                         child: Column(
                           children: [
-                            _buildDrawerItem(context, Icons.settings_outlined, "Settings", false),
-                            _buildDrawerItem(context, Icons.headset_mic_outlined, "Support", false),
+                            _buildDrawerItem(
+                              context: context,
+                              icon: Icons.book_rounded,
+                              title: "My Journals",
+                              isActive: false,
+                              onTap: () {
+                                DashboardScreen.of(context)?.toggleDrawer();
+                                Future.delayed(
+                                  const Duration(milliseconds: 300),
+                                  () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => const JournalScreen(),
+                                      ),
+                                    );
+                                  },
+                                );
+                              },
+                            ),
+                            _buildDrawerItem(
+                              context: context,
+                              icon: Icons.folder_special_rounded,
+                              title: "Saved Plans",
+                              isActive: false,
+                              onTap: () {
+                                DashboardScreen.of(context)?.toggleDrawer();
+                                Future.delayed(
+                                  const Duration(milliseconds: 300),
+                                  () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) =>
+                                            GoalPlansLibraryScreen(),
+                                      ),
+                                    );
+                                  },
+                                );
+                              },
+                            ),
+                            _buildDrawerItem(
+                              context: context,
+                              icon: Icons.settings_rounded,
+                              title: "Settings",
+                              isActive: selectedIndex == 4,
+                              onTap: () => onTabSelected(4),
+                            ),
                           ],
                         ),
                       ),
@@ -93,23 +164,35 @@ class SideMenu extends StatelessWidget {
               color: Colors.white,
             ),
           ),
+          SizedBox(height: 4.h),
+          Text(
+            "Pro Trader",
+            style: AppTypography.body.copyWith(
+              fontSize: 14.sp,
+              color: Colors.white54,
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildDrawerItem(BuildContext context, IconData icon, String title, bool isActive) {
+  Widget _buildDrawerItem({
+    required BuildContext context,
+    required IconData icon,
+    required String title,
+    required bool isActive,
+    required VoidCallback onTap,
+  }) {
     return Padding(
       padding: EdgeInsets.only(bottom: 24.h),
       child: InkWell(
-        onTap: () {
-          DashboardScreen.of(context)?.toggleDrawer();
-        },
+        onTap: onTap,
         child: Row(
           children: [
             Icon(
               icon,
-              color: isActive ? Colors.white : Colors.white38,
+              color: isActive ? AppColors.primary : Colors.white38,
               size: 24.sp,
             ),
             SizedBox(width: 16.w),

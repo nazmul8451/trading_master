@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../../model/plan_model.dart';
-import '../../controller/plan_controller.dart';
-import '../../service/plan_storage_service.dart';
+import '../../model/trade_plan_model.dart';
+import '../../service/trade_storage_service.dart';
 
 class GoalSheetScreen extends StatelessWidget {
-  final PlanModel plan;
+  final TradePlanModel plan;
 
   const GoalSheetScreen({super.key, required this.plan});
 
   void _savePlan(BuildContext context) async {
-    final storage = PlanStorageService();
-    await storage.savePlan(plan);
-    
+    final storage = TradeStorageService();
+    await storage.saveTradeSession(plan);
+
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -26,9 +25,12 @@ class GoalSheetScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final entries = PlanController.calculatePlan(plan);
-    final finalBalance = entries.last.endBalance;
-    final totalProfit = finalBalance - plan.startCapital;
+    final entries = plan.entries;
+    // Calculate final balance from the last entry
+    final finalBalance = entries.isNotEmpty
+        ? (entries.last.investAmount + entries.last.potentialProfit)
+        : plan.balance;
+    final totalProfit = finalBalance - plan.balance;
 
     return Scaffold(
       appBar: AppBar(
@@ -81,8 +83,19 @@ class GoalSheetScreen extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded(child: _buildStat('Start Capital', '${plan.currency}${plan.startCapital.toStringAsFixed(2)}')),
-              Expanded(child: _buildStat('Target ${plan.durationType}', '${plan.targetPercent}%', crossAxisAlignment: CrossAxisAlignment.end)),
+              Expanded(
+                child: _buildStat(
+                  'Start Capital',
+                  '${plan.currency}${plan.balance.toStringAsFixed(2)}',
+                ),
+              ),
+              Expanded(
+                child: _buildStat(
+                  'Target Profit',
+                  '${plan.targetProfit}%',
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                ),
+              ),
             ],
           ),
           SizedBox(height: 16.h),
@@ -91,7 +104,9 @@ class GoalSheetScreen extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded(child: _buildStat('Duration', '${plan.duration} ${plan.durationType}')),
+              Expanded(
+                child: _buildStat('Duration', '${plan.entries.length} Steps'),
+              ),
               Expanded(
                 child: _buildStat(
                   'Projected Final',
@@ -108,8 +123,13 @@ class GoalSheetScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStat(String label, String value,
-      {Color? color, bool isLarge = false, CrossAxisAlignment crossAxisAlignment = CrossAxisAlignment.start}) {
+  Widget _buildStat(
+    String label,
+    String value, {
+    Color? color,
+    bool isLarge = false,
+    CrossAxisAlignment crossAxisAlignment = CrossAxisAlignment.start,
+  }) {
     return Column(
       crossAxisAlignment: crossAxisAlignment,
       children: [
@@ -138,7 +158,11 @@ class GoalSheetScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPlanRow(PlanEntry entry) {
+  Widget _buildPlanRow(TradeEntryModel entry) {
+    final endBalance = entry.investAmount + entry.potentialProfit;
+    // Assuming Daily plan for date calculation
+    final date = plan.date.add(Duration(days: entry.step - 1));
+
     return Container(
       margin: EdgeInsets.only(bottom: 12.h),
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
@@ -156,7 +180,7 @@ class GoalSheetScreen extends StatelessWidget {
               borderRadius: BorderRadius.circular(8.r),
             ),
             child: Text(
-              '${plan.durationType.substring(0, plan.durationType.length - 1)} ${entry.day}',
+              'Step ${entry.step}',
               style: TextStyle(
                 color: const Color(0xFF2369FF),
                 fontWeight: FontWeight.bold,
@@ -175,17 +199,26 @@ class GoalSheetScreen extends StatelessWidget {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Target', style: TextStyle(color: Colors.white60, fontSize: 12.sp)),
+                        Text(
+                          'Target',
+                          style: TextStyle(
+                            color: Colors.white60,
+                            fontSize: 12.sp,
+                          ),
+                        ),
                         SizedBox(height: 4.h),
                         Text(
-                          _formatDate(entry.date),
-                          style: TextStyle(color: Colors.white30, fontSize: 10.sp),
+                          _formatDate(date),
+                          style: TextStyle(
+                            color: Colors.white30,
+                            fontSize: 10.sp,
+                          ),
                         ),
                       ],
                     ),
                     Flexible(
                       child: Text(
-                        '+${plan.currency}${entry.targetProfit.toStringAsFixed(2)}',
+                        '+${plan.currency}${entry.potentialProfit.toStringAsFixed(2)}',
                         style: TextStyle(
                           color: const Color(0xFF00E676),
                           fontWeight: FontWeight.bold,
@@ -200,11 +233,17 @@ class GoalSheetScreen extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Balance', style: TextStyle(color: Colors.white60, fontSize: 12.sp)),
+                    Text(
+                      'Balance',
+                      style: TextStyle(color: Colors.white60, fontSize: 12.sp),
+                    ),
                     Flexible(
                       child: Text(
-                        '${plan.currency}${entry.endBalance.toStringAsFixed(2)}',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14.sp),
+                        '${plan.currency}${endBalance.toStringAsFixed(2)}',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14.sp,
+                        ),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -217,10 +256,21 @@ class GoalSheetScreen extends StatelessWidget {
       ),
     );
   }
+
   String _formatDate(DateTime date) {
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     return '${date.day} ${months[date.month - 1]} ${date.year}';
   }

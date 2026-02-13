@@ -10,16 +10,18 @@ class TradeController {
   }) {
     List<TradeEntryModel> entries = [];
     double payoutRatio = payoutPercentage / 100;
-    
+
     // 1% of Balance
     double investAmount = balance * 0.01;
     double potentialProfit = investAmount * payoutRatio;
-          
-    entries.add(TradeEntryModel(
-      step: 1,
-      investAmount: double.parse(investAmount.toStringAsFixed(2)),
-      potentialProfit: double.parse(potentialProfit.toStringAsFixed(2)),
-    ));
+
+    entries.add(
+      TradeEntryModel(
+        step: 1,
+        investAmount: double.parse(investAmount.toStringAsFixed(2)),
+        potentialProfit: double.parse(potentialProfit.toStringAsFixed(2)),
+      ),
+    );
 
     return entries;
   }
@@ -57,5 +59,31 @@ class TradeController {
       potentialProfit: double.parse(potentialProfit.toStringAsFixed(2)),
       isRecovery: true,
     );
+  }
+
+  static List<TradeEntryModel> calculateCompoundingPlan({
+    required double startCapital,
+    required double targetPercent,
+    required int duration,
+  }) {
+    List<TradeEntryModel> entries = [];
+    double currentBalance = startCapital;
+    double dailyTargetPercent = targetPercent / 100;
+
+    for (int i = 1; i <= duration; i++) {
+      double targetProfit = currentBalance * dailyTargetPercent;
+
+      entries.add(
+        TradeEntryModel(
+          step: i,
+          investAmount: double.parse(currentBalance.toStringAsFixed(2)),
+          potentialProfit: double.parse(targetProfit.toStringAsFixed(2)),
+          status: 'pending',
+        ),
+      );
+
+      currentBalance += targetProfit;
+    }
+    return entries;
   }
 }

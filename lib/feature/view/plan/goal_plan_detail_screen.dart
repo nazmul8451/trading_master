@@ -2,71 +2,84 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_typography.dart';
-import '../../model/plan_model.dart';
-import '../../controller/plan_controller.dart';
+import '../../model/trade_plan_model.dart';
 import 'package:intl/intl.dart';
-import '../../service/plan_storage_service.dart';
+import '../../service/trade_storage_service.dart';
 import '../../model/journal_model.dart';
 import '../../service/journal_storage_service.dart';
 import '../trade/trade_plan_screen_journal.dart';
+import '../../../core/widgets/premium_background.dart';
+import '../../../core/widgets/glass_container.dart';
+import '../../../core/widgets/animated_entrance.dart';
 
 class GoalPlanDetailScreen extends StatefulWidget {
-  final PlanModel plan;
+  final TradePlanModel plan;
 
-  const GoalPlanDetailScreen({
-    super.key,
-    required this.plan,
-  });
+  const GoalPlanDetailScreen({super.key, required this.plan});
 
   @override
   State<GoalPlanDetailScreen> createState() => _GoalPlanDetailScreenState();
 }
 
 class _GoalPlanDetailScreenState extends State<GoalPlanDetailScreen> {
-  late PlanModel _currentPlan;
-  late List<PlanEntry> _entries;
+  late TradePlanModel _currentPlan;
+  late List<TradeEntryModel> _entries;
 
   @override
   void initState() {
     super.initState();
     _currentPlan = widget.plan;
-    _entries = PlanController.calculatePlan(_currentPlan);
+    _entries = _currentPlan.entries;
   }
 
-  void _updateStatus(int day, String status) async {
-    final updatedStatuses = Map<int, String>.from(_currentPlan.dailyStatuses);
-    updatedStatuses[day] = status;
+  void _updateStatus(int step, String status) async {
+    final updatedEntries = _entries.map((entry) {
+      if (entry.step == step) {
+        return TradeEntryModel(
+          step: entry.step,
+          investAmount: entry.investAmount,
+          potentialProfit: entry.potentialProfit,
+          status: status,
+          isRecovery: entry.isRecovery,
+          emotion: entry.emotion,
+          note: entry.note,
+        );
+      }
+      return entry;
+    }).toList();
 
-    final updatedPlan = PlanModel(
+    final updatedPlan = TradePlanModel(
       id: _currentPlan.id,
-      startCapital: _currentPlan.startCapital,
-      targetPercent: _currentPlan.targetPercent,
-      duration: _currentPlan.duration,
-      durationType: _currentPlan.durationType,
+      balance: _currentPlan.balance,
+      targetProfit: _currentPlan.targetProfit,
+      stopLossLimit: _currentPlan.stopLossLimit,
+      payoutPercentage: _currentPlan.payoutPercentage,
       currency: _currentPlan.currency,
-      startDate: _currentPlan.startDate,
-      dailyStatuses: updatedStatuses,
+      durationType: _currentPlan.durationType,
+      date: _currentPlan.date,
+      entries: updatedEntries,
     );
 
     setState(() {
       _currentPlan = updatedPlan;
+      _entries = updatedEntries;
     });
 
-    await PlanStorageService().updatePlan(updatedPlan);
-    _showFeedback(status, day);
+    await TradeStorageService().saveTradeSession(updatedPlan);
+    _showFeedback(status, step);
   }
 
-  void _showFeedback(String status, int day) {
+  void _showFeedback(String status, int step) {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => _buildFeedbackDialog(status, day),
+      builder: (context) => _buildFeedbackDialog(status, step),
     );
   }
 
-  Widget _buildFeedbackDialog(String status, int day) {
+  Widget _buildFeedbackDialog(String status, int step) {
     final isHit = status == 'hit';
-    final dailyTarget = _entries[day - 1].targetProfit;
+    final dailyTarget = _entries[step - 1].potentialProfit;
     final color = isHit ? AppColors.success : AppColors.accentBlue;
 
     return Dialog(
@@ -80,18 +93,12 @@ class _GoalPlanDetailScreenState extends State<GoalPlanDetailScreen> {
             padding: EdgeInsets.fromLTRB(24.r, 64.r, 24.r, 24.r),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [
-                  const Color(0xFF1E222D),
-                  const Color(0xFF161922),
-                ],
+                colors: [const Color(0xFF1E222D), const Color(0xFF161922)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(28.r),
-              border: Border.all(
-                color: color.withOpacity(0.2),
-                width: 1.5,
-              ),
+              border: Border.all(color: color.withOpacity(0.2), width: 1.5),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.5),
@@ -118,13 +125,13 @@ class _GoalPlanDetailScreenState extends State<GoalPlanDetailScreen> {
                 ),
                 SizedBox(height: 12.h),
                 Container(
-                  padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 14.w,
+                    vertical: 6.h,
+                  ),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [
-                        color.withOpacity(0.2),
-                        color.withOpacity(0.05),
-                      ],
+                      colors: [color.withOpacity(0.2), color.withOpacity(0.05)],
                     ),
                     borderRadius: BorderRadius.circular(100.r),
                     border: Border.all(color: color.withOpacity(0.3)),
@@ -152,9 +159,9 @@ class _GoalPlanDetailScreenState extends State<GoalPlanDetailScreen> {
                 ),
                 SizedBox(height: 24.h),
                 Text(
-                  isHit 
-                    ? 'Amazing work! You\'ve successfully hit your target of ${_currentPlan.currency}${dailyTarget.toStringAsFixed(2)} for today.'
-                    : 'A stop loss is simply a business cost in trading. By taking it, you\'ve shown true maturity and discipline.',
+                  isHit
+                      ? 'Amazing work! You\'ve successfully hit your target of ${_currentPlan.currency}${dailyTarget.toStringAsFixed(2)} for today.'
+                      : 'A stop loss is simply a business cost in trading. By taking it, you\'ve shown true maturity and discipline.',
                   style: AppTypography.body.copyWith(
                     color: AppColors.textBody,
                     fontSize: 15.sp,
@@ -175,12 +182,16 @@ class _GoalPlanDetailScreenState extends State<GoalPlanDetailScreen> {
                           note: note,
                           relatedId: _currentPlan.id,
                           type: 'plan_day',
-                          title: '${DateFormat('EEEE').format(DateTime.now())} Journal',
+                          title:
+                              '${DateFormat('EEEE').format(DateTime.now())} Journal',
                         );
                         await JournalStorageService().saveJournal(journal);
-                        if(mounted) {
+                        if (mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Journal entry saved!'), duration: Duration(seconds: 1)),
+                            const SnackBar(
+                              content: Text('Journal entry saved!'),
+                              duration: Duration(seconds: 1),
+                            ),
                           );
                         }
                       },
@@ -188,7 +199,10 @@ class _GoalPlanDetailScreenState extends State<GoalPlanDetailScreen> {
                   },
                   borderRadius: BorderRadius.circular(12.r),
                   child: Container(
-                    padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 16.w),
+                    padding: EdgeInsets.symmetric(
+                      vertical: 10.h,
+                      horizontal: 16.w,
+                    ),
                     decoration: BoxDecoration(
                       border: Border.all(color: color.withOpacity(0.3)),
                       borderRadius: BorderRadius.circular(12.r),
@@ -200,7 +214,10 @@ class _GoalPlanDetailScreenState extends State<GoalPlanDetailScreen> {
                         SizedBox(width: 8.w),
                         Text(
                           'Add Journal Reflection',
-                          style: AppTypography.buttonText.copyWith(color: color, fontSize: 13.sp),
+                          style: AppTypography.buttonText.copyWith(
+                            color: color,
+                            fontSize: 13.sp,
+                          ),
                         ),
                       ],
                     ),
@@ -231,7 +248,9 @@ class _GoalPlanDetailScreenState extends State<GoalPlanDetailScreen> {
                       foregroundColor: Colors.black,
                       shadowColor: Colors.transparent,
                       minimumSize: Size(double.infinity, 56.h),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16.r),
+                      ),
                       elevation: 0,
                     ),
                     child: Text(
@@ -284,10 +303,7 @@ class _GoalPlanDetailScreenState extends State<GoalPlanDetailScreen> {
                 padding: EdgeInsets.all(24.r),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [
-                      color,
-                      color.withOpacity(0.7),
-                    ],
+                    colors: [color, color.withOpacity(0.7)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -308,47 +324,83 @@ class _GoalPlanDetailScreenState extends State<GoalPlanDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    _entries = PlanController.calculatePlan(_currentPlan);
-    final finalBalance = _entries.last.endBalance;
-    final totalGain = finalBalance - _currentPlan.startCapital;
-    final totalGainPercent = (totalGain / _currentPlan.startCapital * 100);
+    double finalBalance;
+    if (_entries.isNotEmpty) {
+      final lastEntry = _entries.last;
+      finalBalance = lastEntry.investAmount + lastEntry.potentialProfit;
+    } else {
+      finalBalance = _currentPlan.balance;
+    }
 
-    // Find the first day without a status
-    int? todayDay;
-    for (int i = 1; i <= _currentPlan.duration; i++) {
-      if (!_currentPlan.dailyStatuses.containsKey(i)) {
-        todayDay = i;
+    final totalGain = finalBalance - _currentPlan.balance;
+    final totalGainPercent = _currentPlan.balance > 0
+        ? (totalGain / _currentPlan.balance * 100)
+        : 0.0;
+
+    int? currentStep;
+    for (var entry in _entries) {
+      if (entry.status == 'pending') {
+        currentStep = entry.step;
         break;
       }
     }
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text('Plan Details'),
+        title: Text(
+          'Plan Details',
+          style: AppTypography.heading.copyWith(fontSize: 18.sp),
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: true,
+        leading: IconButton(
+          icon: Container(
+            padding: EdgeInsets.all(8.r),
+            decoration: BoxDecoration(
+              color: AppColors.surface.withOpacity(0.5),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.arrow_back_ios_new, size: 18),
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
-      body: SafeArea(
+      body: PremiumBackground(
         child: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(horizontal: 20.w.clamp(16, 24).toDouble()),
+          physics: const BouncingScrollPhysics(),
+          padding: EdgeInsets.symmetric(
+            horizontal: 20.w.clamp(16, 24).toDouble(),
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(height: 16.h.clamp(12, 20).toDouble()),
-              _buildPlanHeader(totalGainPercent, finalBalance),
-              if (todayDay != null) ...[
-                SizedBox(height: 24.h.clamp(20, 32).toDouble()),
-                _buildTodayTargetCard(todayDay),
+              SizedBox(
+                height: 60.h + MediaQuery.of(context).padding.top,
+              ), // AppBar spacing
+              AnimatedEntrance(
+                child: _buildPlanHeader(totalGainPercent, finalBalance),
+              ),
+              if (currentStep != null) ...[
+                SizedBox(height: 24.h),
+                AnimatedEntrance(
+                  delay: const Duration(milliseconds: 200),
+                  offset: const Offset(0.2, 0),
+                  child: _buildTodayTargetCard(currentStep),
+                ),
               ],
-              SizedBox(height: 24.h.clamp(20, 32).toDouble()),
-              Text(
-                'Regular Targets',
-                style: AppTypography.heading.copyWith(
-                  fontSize: 20.sp.clamp(18, 24).toDouble(),
+              SizedBox(height: 32.h),
+              AnimatedEntrance(
+                delay: const Duration(milliseconds: 400),
+                child: Text(
+                  'Regular Targets',
+                  style: AppTypography.heading.copyWith(fontSize: 20.sp),
                 ),
               ),
-              SizedBox(height: 16.h.clamp(12, 20).toDouble()),
+              SizedBox(height: 16.h),
               _buildTargetsList(_entries),
-              SizedBox(height: 24.h.clamp(20, 32).toDouble()),
+              SizedBox(height: 48.h),
             ],
           ),
         ),
@@ -356,15 +408,18 @@ class _GoalPlanDetailScreenState extends State<GoalPlanDetailScreen> {
     );
   }
 
-  Widget _buildTodayTargetCard(int day) {
-    final entry = _entries[day - 1];
-    return Container(
+  Widget _buildTodayTargetCard(int step) {
+    var entry = _entries[step - 1]; // Fallback to safe index logic if needed
+    // Safety check just in case, though logically step should be valid
+    if (step > _entries.length) return SizedBox();
+
+    final endBalance = entry.investAmount + entry.potentialProfit;
+
+    return GlassContainer(
       padding: EdgeInsets.all(20.r),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: AppColors.primary.withOpacity(0.2)),
-      ),
+      borderRadius: 24.r,
+      color: AppColors.surface.withOpacity(0.4),
+      border: Border.all(color: AppColors.primary.withOpacity(0.2)),
       child: Column(
         children: [
           Row(
@@ -373,36 +428,72 @@ class _GoalPlanDetailScreenState extends State<GoalPlanDetailScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    "TODAY'S TARGET",
-                    style: AppTypography.body.copyWith(
-                      fontSize: 12.sp,
-                      color: AppColors.textBody,
-                      letterSpacing: 1,
-                    ),
+                  Row(
+                    children: [
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 8.w,
+                          vertical: 4.h,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(8.r),
+                        ),
+                        child: Text(
+                          "TODAY'S TARGET",
+                          style: AppTypography.label.copyWith(
+                            fontSize: 10.sp,
+                            color: AppColors.primary,
+                            letterSpacing: 1,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
+                  SizedBox(height: 8.h),
                   Text(
-                    _getPeriodLabel(day),
+                    _getPeriodLabel(step),
                     style: AppTypography.heading.copyWith(fontSize: 22.sp),
                   ),
                 ],
               ),
               Container(
-                padding: EdgeInsets.all(10.r),
+                padding: EdgeInsets.all(12.r),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.1),
+                  gradient: LinearGradient(
+                    colors: [AppColors.primary, AppColors.accentBlue],
+                  ),
                   shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primary.withOpacity(0.4),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
-                child: Icon(Icons.track_changes, color: AppColors.primary, size: 24.sp),
+                child: Icon(
+                  Icons.track_changes,
+                  color: Colors.white,
+                  size: 24.sp,
+                ),
               ),
             ],
           ),
-          SizedBox(height: 20.h),
+          SizedBox(height: 24.h),
           Row(
             children: [
-              _buildTargetStat("Target", "+${_currentPlan.currency}${entry.targetProfit.toStringAsFixed(2)}", AppColors.success),
+              _buildTargetStat(
+                "Target Profit",
+                "+${_currentPlan.currency}${entry.potentialProfit.toStringAsFixed(2)}",
+                AppColors.success,
+              ),
               SizedBox(width: 20.w),
-              _buildTargetStat("End Balance", "${_currentPlan.currency}${entry.endBalance.toStringAsFixed(2)}", Colors.white),
+              _buildTargetStat(
+                "End Balance",
+                "${_currentPlan.currency}${endBalance.toStringAsFixed(2)}",
+                Colors.white,
+              ),
             ],
           ),
           SizedBox(height: 24.h),
@@ -410,19 +501,20 @@ class _GoalPlanDetailScreenState extends State<GoalPlanDetailScreen> {
             children: [
               Expanded(
                 child: _buildActionButton(
-                  "Target Hit",
-                  Icons.check_circle_outline,
+                  "Hit Target",
+                  Icons.check_circle,
                   AppColors.success,
-                  () => _updateStatus(day, 'hit'),
+                  () => _updateStatus(step, 'hit'),
+                  isPrimary: true,
                 ),
               ),
               SizedBox(width: 12.w),
               Expanded(
                 child: _buildActionButton(
                   "Stop Loss",
-                  Icons.remove_circle_outline,
+                  Icons.security,
                   const Color(0xFFFF5252),
-                  () => _updateStatus(day, 'sl'),
+                  () => _updateStatus(step, 'sl'),
                 ),
               ),
             ],
@@ -436,29 +528,65 @@ class _GoalPlanDetailScreenState extends State<GoalPlanDetailScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: AppTypography.body.copyWith(fontSize: 10.sp, color: AppColors.textBody)),
-        Text(value, style: AppTypography.buttonText.copyWith(fontSize: 16.sp, color: color)),
+        Text(
+          label.toUpperCase(),
+          style: AppTypography.label.copyWith(
+            fontSize: 10.sp,
+            color: AppColors.textBody.withOpacity(0.7),
+          ),
+        ),
+        SizedBox(height: 4.h),
+        Text(
+          value,
+          style: AppTypography.heading.copyWith(
+            fontSize: 20.sp,
+            color: color,
+            shadows: [Shadow(color: color.withOpacity(0.3), blurRadius: 10)],
+          ),
+        ),
       ],
     );
   }
 
-  Widget _buildActionButton(String label, IconData icon, Color color, VoidCallback onTap) {
+  Widget _buildActionButton(
+    String label,
+    IconData icon,
+    Color color,
+    VoidCallback onTap, {
+    bool isPrimary = false,
+  }) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12.r),
+      borderRadius: BorderRadius.circular(16.r),
       child: Container(
-        padding: EdgeInsets.symmetric(vertical: 12.h),
+        padding: EdgeInsets.symmetric(vertical: 16.h),
         decoration: BoxDecoration(
-          border: Border.all(color: color.withOpacity(0.3)),
-          borderRadius: BorderRadius.circular(12.r),
-          color: color.withOpacity(0.05),
+          color: isPrimary ? color.withOpacity(0.2) : Colors.transparent,
+          border: Border.all(color: color.withOpacity(isPrimary ? 0.5 : 0.3)),
+          borderRadius: BorderRadius.circular(16.r),
+          boxShadow: isPrimary
+              ? [
+                  BoxShadow(
+                    color: color.withOpacity(0.1),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : null,
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: color, size: 18.sp),
+            Icon(icon, color: color, size: 20.sp),
             SizedBox(width: 8.w),
-            Text(label, style: AppTypography.buttonText.copyWith(fontSize: 14.sp, color: color)),
+            Text(
+              label,
+              style: AppTypography.buttonText.copyWith(
+                fontSize: 14.sp,
+                color: color,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ],
         ),
       ),
@@ -466,20 +594,11 @@ class _GoalPlanDetailScreenState extends State<GoalPlanDetailScreen> {
   }
 
   Widget _buildPlanHeader(double totalGainPercent, double finalBalance) {
-    return Container(
-      padding: EdgeInsets.all(20.r.clamp(16, 24).toDouble()),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppColors.primary.withValues(alpha: 0.2),
-            AppColors.primary.withValues(alpha: 0.05),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16.r.clamp(12, 20).toDouble()),
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
-      ),
+    return GlassContainer(
+      padding: EdgeInsets.all(24.r),
+      borderRadius: 24.r,
+      color: Colors.white.withOpacity(0.03),
+      border: Border.all(color: Colors.white.withOpacity(0.1)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -491,49 +610,54 @@ class _GoalPlanDetailScreenState extends State<GoalPlanDetailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${_currentPlan.targetPercent}% ${_currentPlan.durationType} Target',
-                      style: AppTypography.heading.copyWith(
-                        fontSize: 18.sp.clamp(16, 22).toDouble(),
-                      ),
+                      '${_currentPlan.targetProfit}% Daily Growth',
+                      style: AppTypography.heading.copyWith(fontSize: 20.sp),
                     ),
-                    SizedBox(height: 4.h.clamp(2, 6).toDouble()),
-                    Text(
-                      'Compounding Plan • ${_currentPlan.duration} ${_currentPlan.durationType}',
-                      style: AppTypography.body.copyWith(
-                        fontSize: 13.sp.clamp(11, 15).toDouble(),
-                        color: AppColors.textBody,
-                      ),
+                    SizedBox(height: 4.h),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.calendar_today,
+                          size: 12.sp,
+                          color: AppColors.textBody,
+                        ),
+                        SizedBox(width: 6.w),
+                        Text(
+                          '${_currentPlan.entries.length} Steps Blueprint',
+                          style: AppTypography.body.copyWith(
+                            fontSize: 13.sp,
+                            color: AppColors.textBody,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
               Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: 10.w.clamp(8, 14).toDouble(),
-                  vertical: 6.h.clamp(4, 8).toDouble(),
-                ),
+                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
                 decoration: BoxDecoration(
-                  color: AppColors.primary,
-                  borderRadius: BorderRadius.circular(8.r.clamp(6, 10).toDouble()),
+                  color: AppColors.success.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(8.r),
+                  border: Border.all(color: AppColors.success.withOpacity(0.3)),
                 ),
                 child: Text(
                   'ACTIVE',
-                  style: AppTypography.body.copyWith(
-                    fontSize: 11.sp.clamp(9, 13).toDouble(),
-                    color: AppColors.textMain,
-                    fontWeight: FontWeight.w700,
+                  style: AppTypography.label.copyWith(
+                    color: AppColors.success,
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
               ),
             ],
           ),
-          SizedBox(height: 20.h.clamp(16, 24).toDouble()),
+          Divider(color: Colors.white.withOpacity(0.1), height: 32.h),
           Row(
             children: [
               Expanded(
                 child: _buildStatColumn(
                   'STARTING CAPITAL',
-                  '${_currentPlan.currency}${_currentPlan.startCapital.toStringAsFixed(2)}',
+                  '${_currentPlan.currency}${_currentPlan.balance.toStringAsFixed(2)}',
                 ),
               ),
               Expanded(
@@ -545,19 +669,19 @@ class _GoalPlanDetailScreenState extends State<GoalPlanDetailScreen> {
               ),
             ],
           ),
-          SizedBox(height: 16.h.clamp(12, 20).toDouble()),
+          SizedBox(height: 20.h),
           Row(
             children: [
               Expanded(
                 child: _buildStatColumn(
-                  'TOTAL GAIN',
-                  '${_currentPlan.currency}${(finalBalance - _currentPlan.startCapital).toStringAsFixed(2)}',
+                  'TOTAL PROFIT',
+                  '${_currentPlan.currency}${(finalBalance - _currentPlan.balance).toStringAsFixed(2)}',
                   color: AppColors.success,
                 ),
               ),
               Expanded(
                 child: _buildStatColumn(
-                  'GAIN %',
+                  'GROWTH',
                   '${totalGainPercent.toStringAsFixed(1)}%',
                   color: AppColors.success,
                 ),
@@ -575,203 +699,139 @@ class _GoalPlanDetailScreenState extends State<GoalPlanDetailScreen> {
       children: [
         Text(
           label,
-          style: AppTypography.body.copyWith(
-            fontSize: 10.sp.clamp(8, 12).toDouble(),
-            color: AppColors.textBody,
-            letterSpacing: 0.5,
+          style: AppTypography.label.copyWith(
+            fontSize: 10.sp,
+            color: AppColors.textBody.withOpacity(0.6),
           ),
         ),
-        SizedBox(height: 6.h.clamp(4, 8).toDouble()),
+        SizedBox(height: 4.h),
         Text(
           value,
-          style: AppTypography.buttonText.copyWith(
-            fontSize: 18.sp.clamp(16, 22).toDouble(),
-            color: color ?? AppColors.textMain,
+          style: AppTypography.heading.copyWith(
+            fontSize: 18.sp,
+            color: color ?? Colors.white,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildTargetsList(List<PlanEntry> entries) {
+  Widget _buildTargetsList(List<TradeEntryModel> entries) {
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: entries.length,
       itemBuilder: (context, index) {
         final entry = entries[index];
-        final profit = entry.endBalance - entry.startBalance;
-        final isLast = index == entries.length - 1;
-        final status = _currentPlan.dailyStatuses[entry.day];
-        final isCompleted = status != null;
+        final status = entry.status;
+        final isCompleted = status != 'pending';
 
-        return Container(
-          margin: EdgeInsets.only(bottom: 12.h.clamp(8, 16).toDouble()),
-          padding: EdgeInsets.all(16.r.clamp(12, 20).toDouble()),
-          decoration: BoxDecoration(
-            color: isCompleted 
-                ? (status == 'hit' ? AppColors.success : AppColors.accentBlue).withOpacity(0.05)
-                : (isLast ? AppColors.primary.withValues(alpha: 0.1) : AppColors.surface),
-            borderRadius: BorderRadius.circular(12.r.clamp(10, 16).toDouble()),
-            border: Border.all(
+        return AnimatedEntrance(
+          delay: Duration(
+            milliseconds: 30 * index,
+          ), // Slightly lower delay for long lists
+          child: Container(
+            margin: EdgeInsets.only(bottom: 12.h),
+            padding: EdgeInsets.all(16.r),
+            decoration: BoxDecoration(
               color: isCompleted
-                  ? (status == 'hit' ? AppColors.success : AppColors.accentBlue).withOpacity(0.3)
-                  : (isLast ? AppColors.primary.withValues(alpha: 0.5) : AppColors.border),
-              width: (isLast || isCompleted) ? 2 : 1,
+                  ? (status == 'hit' ? AppColors.success : AppColors.accentBlue)
+                        .withOpacity(0.05)
+                  : Colors.white.withOpacity(0.02),
+              borderRadius: BorderRadius.circular(16.r),
+              border: Border.all(
+                color: isCompleted
+                    ? (status == 'hit'
+                              ? AppColors.success
+                              : AppColors.accentBlue)
+                          .withOpacity(0.3)
+                    : Colors.white.withOpacity(0.05),
+              ),
             ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 32.w.clamp(28, 36).toDouble(),
-                        height: 32.h.clamp(28, 36).toDouble(),
-                        decoration: BoxDecoration(
-                          color: isCompleted
-                              ? (status == 'hit' ? AppColors.success : AppColors.accentBlue)
-                              : (isLast ? AppColors.primary : AppColors.primary.withValues(alpha: 0.15)),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Center(
-                          child: status != null
-                              ? Icon(status == 'hit' ? Icons.check : Icons.close, color: Colors.white, size: 16.sp)
-                              : Text(
-                                  '${entry.day}',
-                                  style: AppTypography.buttonText.copyWith(
-                                    fontSize: 14.sp.clamp(12, 16).toDouble(),
-                                    color: isLast ? AppColors.textMain : AppColors.primary,
-                                  ),
-                                ),
-                        ),
-                      ),
-                      SizedBox(width: 12.w.clamp(8, 16).toDouble()),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            _getPeriodLabel(entry.day),
-                            style: AppTypography.subHeading.copyWith(
-                              fontSize: 15.sp.clamp(13, 17).toDouble(),
+            child: Row(
+              children: [
+                Container(
+                  width: 36.w,
+                  height: 36.h,
+                  decoration: BoxDecoration(
+                    color: isCompleted
+                        ? (status == 'hit'
+                              ? AppColors.success
+                              : AppColors.accentBlue)
+                        : Colors.white.withOpacity(0.05),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: isCompleted
+                        ? Icon(
+                            status == 'hit' ? Icons.check : Icons.close,
+                            color: Colors.white,
+                            size: 18.sp,
+                          )
+                        : Text(
+                            '${entry.step}',
+                            style: AppTypography.buttonText.copyWith(
+                              fontSize: 14.sp,
+                              color: AppColors.textBody,
                             ),
                           ),
-                          if (isCompleted)
-                            Text(
-                              status == 'hit' ? 'Target Achieved' : 'Stop Loss Taken',
-                              style: AppTypography.body.copyWith(
-                                fontSize: 11.sp.clamp(9, 13).toDouble(),
-                                color: status == 'hit' ? AppColors.success : AppColors.accentBlue,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            )
-                          else if (isLast)
-                            Text(
-                              'Final Target',
-                              style: AppTypography.body.copyWith(
-                                fontSize: 11.sp.clamp(9, 13).toDouble(),
-                                color: AppColors.primary,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                        ],
+                  ),
+                ),
+                SizedBox(width: 16.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _getPeriodLabel(entry.step),
+                        style: AppTypography.body.copyWith(
+                          fontSize: 16.sp,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        "Target: ${_currentPlan.currency}${entry.potentialProfit.toStringAsFixed(2)}",
+                        style: AppTypography.body.copyWith(
+                          fontSize: 12.sp,
+                          color: AppColors.textBody,
+                        ),
                       ),
                     ],
                   ),
-                  Icon(
-                    isCompleted 
-                        ? (status == 'hit' ? Icons.stars : Icons.verified_user)
-                        : (isLast ? Icons.flag : Icons.trending_up),
-                    color: isCompleted
-                        ? (status == 'hit' ? AppColors.success : AppColors.accentBlue)
-                        : (isLast ? AppColors.primary : AppColors.textBody),
-                    size: 20.sp.clamp(18, 24).toDouble(),
+                ),
+                if (isCompleted)
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 10.w,
+                      vertical: 4.h,
+                    ),
+                    decoration: BoxDecoration(
+                      color:
+                          (status == 'hit'
+                                  ? AppColors.success
+                                  : AppColors.accentBlue)
+                              .withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(20.r),
+                    ),
+                    child: Text(
+                      status == 'hit' ? 'HIT' : 'SL',
+                      style: AppTypography.label.copyWith(
+                        color: status == 'hit'
+                            ? AppColors.success
+                            : AppColors.accentBlue,
+                      ),
+                    ),
                   ),
-                ],
-              ),
-              SizedBox(height: 12.h.clamp(8, 16).toDouble()),
-              Container(
-                padding: EdgeInsets.all(12.r.clamp(10, 14).toDouble()),
-                decoration: BoxDecoration(
-                  color: AppColors.background,
-                  borderRadius: BorderRadius.circular(8.r.clamp(6, 10).toDouble()),
-                ),
-                child: Column(
-                  children: [
-                    _buildDetailRow(
-                      'Start Balance',
-                      '${_currentPlan.currency}${entry.startBalance.toStringAsFixed(2)}',
-                    ),
-                    SizedBox(height: 8.h.clamp(6, 10).toDouble()),
-                    _buildDetailRow(
-                      'Target Profit (${_currentPlan.targetPercent}%)',
-                      '+${_currentPlan.currency}${profit.toStringAsFixed(2)}',
-                      valueColor: AppColors.success,
-                    ),
-                    SizedBox(height: 8.h.clamp(6, 10).toDouble()),
-                    Divider(
-                      color: AppColors.border,
-                      height: 1,
-                    ),
-                    SizedBox(height: 8.h.clamp(6, 10).toDouble()),
-                    _buildDetailRow(
-                      'End Balance',
-                      '${_currentPlan.currency}${entry.endBalance.toStringAsFixed(2)}',
-                      isBold: true,
-                      valueColor: isLast ? AppColors.primary : null,
-                    ),
-                  ],
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },
     );
   }
 
-  Widget _buildDetailRow(
-    String label,
-    String value, {
-    bool isBold = false,
-    Color? valueColor,
-  }) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: AppTypography.body.copyWith(
-            fontSize: 12.sp.clamp(10, 14).toDouble(),
-            color: AppColors.textBody,
-            fontWeight: isBold ? FontWeight.w600 : FontWeight.normal,
-          ),
-        ),
-        Text(
-          value,
-          style: AppTypography.buttonText.copyWith(
-            fontSize: 13.sp.clamp(11, 15).toDouble(),
-            color: valueColor ?? AppColors.textMain,
-            fontWeight: isBold ? FontWeight.w700 : FontWeight.w600,
-          ),
-        ),
-      ],
-    );
-  }
-
-  String _getPeriodLabel(int day) {
-    switch (_currentPlan.durationType) {
-      case 'Days':
-        return 'Day $day';
-      case 'Weeks':
-        return 'Week $day';
-      case 'Months':
-        return 'Month $day';
-      default:
-        return 'Period $day';
-    }
+  String _getPeriodLabel(int index) {
+    return 'Day $index';
   }
 }

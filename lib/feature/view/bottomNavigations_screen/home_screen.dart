@@ -1,16 +1,18 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'dart:ui';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_typography.dart';
 import '../plan/goal_plans_library_screen.dart';
 import '../dashboard/dashboard_screen.dart';
 import '../trade/trade_setup_screen.dart';
 import '../journal/journal_screen.dart';
-
 import '../../service/wallet_service.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:intl/intl.dart';
+import '../../../core/widgets/premium_background.dart';
+import '../../../core/widgets/glass_container.dart';
+import '../../../core/widgets/animated_entrance.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -21,6 +23,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   double _balance = 0.0;
+  String _userName = "Rimon islam"; // Default or fetched
 
   @override
   void initState() {
@@ -38,8 +41,9 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,
       backgroundColor: AppColors.background,
-      body: SafeArea(
+      body: PremiumBackground(
         child: SingleChildScrollView(
           padding: EdgeInsets.symmetric(
             horizontal: 20.w.clamp(16, 24).toDouble(),
@@ -48,26 +52,49 @@ class _HomeScreenState extends State<HomeScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(height: 16.h.clamp(12, 20).toDouble()),
-              _buildHeader(context),
+              AnimatedEntrance(child: _buildHeader(context)),
               SizedBox(height: 24.h.clamp(20, 32).toDouble()),
-              _GlassCard(
-                width: double.infinity,
-                child: _buildBalanceCardContent(),
+              AnimatedEntrance(
+                delay: const Duration(milliseconds: 200),
+                child: GlassContainer(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(24.r),
+                  borderRadius: 24.r,
+                  color: Colors.white.withOpacity(0.03),
+                  border: Border.all(color: Colors.white.withOpacity(0.05)),
+                  child: _buildBalanceCardContent(),
+                ),
               ),
               SizedBox(height: 24.h.clamp(20, 32).toDouble()),
-              _GlassCard(
-                width: double.infinity,
-                padding: EdgeInsets.all(16.r),
-                child: _buildDisciplineContent(),
+              AnimatedEntrance(
+                delay: const Duration(milliseconds: 300),
+                child: GlassContainer(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(16.r),
+                  borderRadius: 24.r,
+                  color: Colors.white.withOpacity(0.03),
+                  border: Border.all(color: Colors.white.withOpacity(0.05)),
+                  child: _buildDisciplineContent(),
+                ),
               ),
               SizedBox(height: 24.h.clamp(20, 32).toDouble()),
-              _buildQuickActions(context),
-              SizedBox(height: 24.h.clamp(20, 32).toDouble()),
-              _GlassCard(
-                width: double.infinity,
-                child: _buildCompoundingCurveContent(),
+              AnimatedEntrance(
+                delay: const Duration(milliseconds: 400),
+                child: _buildQuickActions(context),
               ),
               SizedBox(height: 24.h.clamp(20, 32).toDouble()),
+              AnimatedEntrance(
+                delay: const Duration(milliseconds: 500),
+                child: GlassContainer(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(24.r),
+                  borderRadius: 24.r,
+                  color: Colors.white.withOpacity(0.03),
+                  border: Border.all(color: Colors.white.withOpacity(0.05)),
+                  child: _buildCompoundingCurveContent(),
+                ),
+              ),
+              SizedBox(height: 100.h), // Bottom padding for nav bar
             ],
           ),
         ),
@@ -81,8 +108,8 @@ class _HomeScreenState extends State<HomeScreen> {
         GestureDetector(
           onTap: () => DashboardScreen.of(context)?.toggleDrawer(),
           child: Container(
-            width: 48.sp.clamp(40, 56).toDouble(),
-            height: 48.sp.clamp(40, 56).toDouble(),
+            width: 48.sp,
+            height: 48.sp,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               gradient: LinearGradient(
@@ -90,19 +117,26 @@ class _HomeScreenState extends State<HomeScreen> {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withOpacity(0.3),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child: Center(
               child: Text(
-                "AS",
+                _userName.isNotEmpty ? _userName[0].toUpperCase() : "U",
                 style: AppTypography.buttonText.copyWith(
-                  fontSize: 18.sp.clamp(16, 22).toDouble(),
+                  fontSize: 18.sp,
                   fontWeight: FontWeight.bold,
                 ),
               ),
             ),
           ),
         ),
-        SizedBox(width: 12.w.clamp(8, 16).toDouble()),
+        SizedBox(width: 12.w),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -110,14 +144,14 @@ class _HomeScreenState extends State<HomeScreen> {
               Text(
                 "Welcome back",
                 style: AppTypography.body.copyWith(
-                  fontSize: 12.sp.clamp(10, 14).toDouble(),
+                  fontSize: 12.sp,
                   color: AppColors.textBody,
                 ),
               ),
               Text(
-                "Rimon islam",
+                _userName,
                 style: AppTypography.buttonText.copyWith(
-                  fontSize: 16.sp.clamp(14, 18).toDouble(),
+                  fontSize: 16.sp,
                   color: AppColors.textMain,
                 ),
               ),
@@ -125,16 +159,17 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         Container(
-          width: 40.sp.clamp(36, 48).toDouble(),
-          height: 40.sp.clamp(36, 48).toDouble(),
+          width: 40.sp,
+          height: 40.sp,
           decoration: BoxDecoration(
             color: AppColors.surface,
-            borderRadius: BorderRadius.circular(12.r.clamp(8, 16).toDouble()),
+            borderRadius: BorderRadius.circular(12.r),
+            border: Border.all(color: Colors.white.withOpacity(0.05)),
           ),
           child: Icon(
             Icons.notifications_outlined,
             color: AppColors.textMain,
-            size: 22.sp.clamp(18, 26).toDouble(),
+            size: 22.sp,
           ),
         ),
       ],
@@ -150,93 +185,101 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Text(
               "CURRENT BALANCE",
-              style: AppTypography.body.copyWith(
-                fontSize: 11.sp.clamp(9, 13).toDouble(),
+              style: AppTypography.label.copyWith(
+                fontSize: 11.sp,
                 color: AppColors.textBody,
                 letterSpacing: 1.2,
               ),
             ),
             Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: 8.w.clamp(6, 12).toDouble(),
-                vertical: 4.h.clamp(2, 6).toDouble(),
-              ),
+              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
               decoration: BoxDecoration(
                 color: AppColors.primary.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(6.r.clamp(4, 8).toDouble()),
+                borderRadius: BorderRadius.circular(6.r),
               ),
               child: Text(
-                "Day 12 / 30",
-                style: AppTypography.body.copyWith(
-                  fontSize: 10.sp.clamp(8, 12).toDouble(),
+                "Active",
+                style: AppTypography.label.copyWith(
+                  fontSize: 10.sp,
                   color: AppColors.primary,
-                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
           ],
         ),
-        SizedBox(height: 8.h.clamp(6, 12).toDouble()),
+        SizedBox(height: 8.h),
         Text(
           NumberFormat.simpleCurrency().format(_balance),
           style: TextStyle(
-            fontSize: 36.sp.clamp(30, 42).toDouble(),
+            fontSize: 36.sp,
             fontWeight: FontWeight.bold,
             color: AppColors.textMain,
           ),
         ),
-        SizedBox(height: 16.h.clamp(12, 20).toDouble()),
+        SizedBox(height: 16.h),
         Text(
-          "Daily Target Progress",
+          "Quick Stats",
           style: AppTypography.body.copyWith(
-            fontSize: 12.sp.clamp(10, 14).toDouble(),
+            fontSize: 12.sp,
             color: AppColors.textBody,
           ),
         ),
-        SizedBox(height: 8.h.clamp(6, 12).toDouble()),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              "\$325 / \$500",
-              style: AppTypography.buttonText.copyWith(
-                fontSize: 14.sp.clamp(12, 16).toDouble(),
-                color: AppColors.textMain,
-              ),
-            ),
-          ],
-        ),
-        SizedBox(height: 8.h.clamp(6, 12).toDouble()),
+        SizedBox(height: 8.h),
         ClipRRect(
-          borderRadius: BorderRadius.circular(8.r.clamp(6, 12).toDouble()),
+          borderRadius: BorderRadius.circular(8.r),
           child: LinearProgressIndicator(
-            value: 0.65,
-            minHeight: 8.h.clamp(6, 10).toDouble(),
+            value: 0.65, // Placeholder for actual progress
+            minHeight: 8.h,
             backgroundColor: Colors.white.withOpacity(0.1),
             valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
           ),
         ),
-        SizedBox(height: 16.h.clamp(12, 20).toDouble()),
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton(
-            onPressed: () {},
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: AppColors.textMain,
-              minimumSize: Size(double.infinity, 48.h.clamp(42, 54).toDouble()),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(
-                  12.r.clamp(8, 16).toDouble(),
-                ),
-              ),
-              elevation: 0,
+        SizedBox(height: 16.h),
+        Container(
+          height: 48.h,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12.r),
+            gradient: LinearGradient(
+              colors: [AppColors.primary, AppColors.primary.withOpacity(0.8)],
             ),
-            child: Text(
-              "View Detailed Plan",
-              style: AppTypography.buttonText.copyWith(
-                fontSize: 14.sp.clamp(12, 16).toDouble(),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withOpacity(0.3),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
               ),
+            ],
+          ),
+          child: ElevatedButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => GoalPlansLibraryScreen(),
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.transparent,
+              foregroundColor: AppColors.textMain,
+              shadowColor: Colors.transparent,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  "View Plans",
+                  style: AppTypography.buttonText.copyWith(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(width: 8.w),
+                Icon(Icons.arrow_forward, size: 16.sp),
+              ],
             ),
           ),
         ),
@@ -248,8 +291,8 @@ class _HomeScreenState extends State<HomeScreen> {
     return Row(
       children: [
         Container(
-          width: 40.sp.clamp(36, 48).toDouble(),
-          height: 40.sp.clamp(36, 48).toDouble(),
+          width: 40.sp,
+          height: 40.sp,
           decoration: BoxDecoration(
             color: AppColors.success.withOpacity(0.15),
             shape: BoxShape.circle,
@@ -257,37 +300,33 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Icon(
             Icons.check_circle,
             color: AppColors.success,
-            size: 24.sp.clamp(20, 28).toDouble(),
+            size: 24.sp,
           ),
         ),
-        SizedBox(width: 12.w.clamp(8, 16).toDouble()),
+        SizedBox(width: 12.w),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "Within Plan",
+                "Health Check",
                 style: AppTypography.buttonText.copyWith(
-                  fontSize: 14.sp.clamp(12, 16).toDouble(),
+                  fontSize: 14.sp,
                   color: AppColors.textMain,
                 ),
               ),
-              SizedBox(height: 2.h.clamp(1, 4).toDouble()),
+              SizedBox(height: 2.h),
               Text(
-                "Risk parameters are optimal. No plan violations detected.",
+                "System optimal. No risk violations.",
                 style: AppTypography.body.copyWith(
-                  fontSize: 11.sp.clamp(9, 13).toDouble(),
+                  fontSize: 11.sp,
                   color: AppColors.textBody,
                 ),
               ),
             ],
           ),
         ),
-        Icon(
-          Icons.chevron_right,
-          color: AppColors.textBody,
-          size: 20.sp.clamp(18, 24).toDouble(),
-        ),
+        Icon(Icons.chevron_right, color: AppColors.textBody, size: 20.sp),
       ],
     );
   }
@@ -299,22 +338,22 @@ class _HomeScreenState extends State<HomeScreen> {
         Text(
           "Quick Actions",
           style: AppTypography.subHeading.copyWith(
-            fontSize: 18.sp.clamp(16, 22).toDouble(),
+            fontSize: 18.sp,
             color: AppColors.textMain,
           ),
         ),
-        SizedBox(height: 12.h.clamp(8, 16).toDouble()),
+        SizedBox(height: 12.h),
         GridView.count(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           crossAxisCount: 2,
-          mainAxisSpacing: 12.h.clamp(8, 16).toDouble(),
-          crossAxisSpacing: 12.w.clamp(8, 16).toDouble(),
+          mainAxisSpacing: 12.h,
+          crossAxisSpacing: 12.w,
           childAspectRatio: 1.4,
           children: [
             _buildActionCard(
-              icon: Icons.add_chart,
-              label: "Add Trade",
+              icon: Icons.rocket_launch,
+              label: "New Plan",
               color: const Color(0xFF3B82F6),
               onTap: () {
                 Navigator.push(
@@ -327,7 +366,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             _buildActionCard(
               icon: Icons.track_changes,
-              label: "Goal Plan",
+              label: "Goal Plans",
               color: const Color(0xFF8B5CF6),
               onTap: () {
                 Navigator.push(
@@ -339,7 +378,7 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             ),
             _buildActionCard(
-              icon: Icons.menu_book,
+              icon: Icons.edit_note,
               label: "Journal",
               color: const Color(0xFFF59E0B),
               onTap: () {
@@ -371,36 +410,33 @@ class _HomeScreenState extends State<HomeScreen> {
     required Color color,
     required VoidCallback onTap,
   }) {
-    return _GlassCard(
+    return GlassContainer(
       padding: EdgeInsets.zero,
+      borderRadius: 16.r,
+      color: Colors.white.withOpacity(0.03),
+      border: Border.all(color: Colors.white.withOpacity(0.05)),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(16.r.clamp(12, 20).toDouble()),
+          borderRadius: BorderRadius.circular(16.r),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                width: 48.sp.clamp(40, 56).toDouble(),
-                height: 48.sp.clamp(40, 56).toDouble(),
+                width: 48.sp,
+                height: 48.sp,
                 decoration: BoxDecoration(
                   color: color.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(
-                    12.r.clamp(8, 16).toDouble(),
-                  ),
+                  borderRadius: BorderRadius.circular(12.r),
                 ),
-                child: Icon(
-                  icon,
-                  color: color,
-                  size: 24.sp.clamp(20, 28).toDouble(),
-                ),
+                child: Icon(icon, color: color, size: 24.sp),
               ),
-              SizedBox(height: 8.h.clamp(6, 12).toDouble()),
+              SizedBox(height: 8.h),
               Text(
                 label,
                 style: AppTypography.buttonText.copyWith(
-                  fontSize: 13.sp.clamp(11, 15).toDouble(),
+                  fontSize: 13.sp,
                   color: AppColors.textMain,
                 ),
               ),
@@ -416,33 +452,22 @@ class _HomeScreenState extends State<HomeScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "Compounding Curve",
+          "Compounding Projection",
           style: AppTypography.subHeading.copyWith(
             fontSize: 16.sp,
             color: AppColors.textMain,
           ),
         ),
-        SizedBox(height: 12.h.clamp(8, 16).toDouble()),
+        SizedBox(height: 12.h),
         SizedBox(
           width: double.infinity,
-          height: 180.h,
+          height: 150.h,
           child: Stack(
             children: [
+              // Simple curve placeholder
               CustomPaint(
                 size: const Size(double.infinity, double.infinity),
                 painter: _CompoundingCurvePainter(),
-              ),
-              Positioned(
-                bottom: 0,
-                left: 0,
-                child: Text(
-                  "PROJECTION: \$25,000.00 BY DAY 30",
-                  style: AppTypography.body.copyWith(
-                    fontSize: 10.sp,
-                    color: AppColors.textBody,
-                    letterSpacing: 0.5,
-                  ),
-                ),
               ),
               Positioned(
                 bottom: 0,
@@ -463,88 +488,42 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-class _GlassCard extends StatelessWidget {
-  final Widget child;
-  final EdgeInsetsGeometry? padding;
-  final double? width;
-
-  const _GlassCard({required this.child, this.padding, this.width});
-
-  @override
-  Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(24.r),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: Container(
-          width: width,
-          padding: padding ?? EdgeInsets.all(24.r),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.03),
-            borderRadius: BorderRadius.circular(24.r),
-            border: Border.all(color: Colors.white.withOpacity(0.05)),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Colors.white.withOpacity(0.05),
-                Colors.white.withOpacity(0.01),
-              ],
-            ),
-          ),
-          child: child,
-        ),
-      ),
-    );
-  }
-}
-
 class _CompoundingCurvePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color(0xFF3B82F6).withOpacity(0.3)
+      ..color = const Color(0xFF3B82F6).withOpacity(0.1)
       ..style = PaintingStyle.fill;
 
     final linePaint = Paint()
-      ..color = const Color(0xFF3B82F6)
+      ..color = const Color(0xFF3B82F6).withOpacity(0.8)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.5;
+      ..strokeWidth = 3;
 
     final path = Path();
     final linePath = Path();
 
+    // Smoother bezier curve
     path.moveTo(0, size.height);
-    linePath.moveTo(0, size.height * 0.7);
+    linePath.moveTo(0, size.height * 0.8);
 
-    for (double i = 0; i <= size.width; i += 1) {
-      final x = i;
-      final progress = i / size.width;
-      final y = size.height * 0.7 * (1 - progress * 0.8);
+    path.lineTo(0, size.height * 0.8);
 
-      linePath.lineTo(x, y);
-      if (i == 0) {
-        path.lineTo(x, y);
-      } else {
-        path.lineTo(x, y);
-      }
-    }
+    linePath.cubicTo(
+      size.width * 0.3,
+      size.height * 0.8,
+      size.width * 0.6,
+      size.height * 0.4,
+      size.width,
+      size.height * 0.2,
+    );
 
+    path.addPath(linePath, Offset.zero);
     path.lineTo(size.width, size.height);
     path.close();
 
     canvas.drawPath(path, paint);
     canvas.drawPath(linePath, linePaint);
-
-    final gridPaint = Paint()
-      ..color = AppColors.border.withOpacity(0.3)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1;
-
-    for (int i = 1; i < 4; i++) {
-      final x = size.width * i / 4;
-      canvas.drawLine(Offset(x, 0), Offset(x, size.height), gridPaint);
-    }
   }
 
   @override

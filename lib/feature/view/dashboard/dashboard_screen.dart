@@ -81,14 +81,31 @@ class DashboardScreenState extends State<DashboardScreen>
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
+      isScrollControlled: true,
       builder: (context) => BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Container(
-          padding: EdgeInsets.all(24.r),
+          padding: EdgeInsets.fromLTRB(24.r, 12.r, 24.r, 32.r),
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            gradient: LinearGradient(
+              colors: [
+                const Color(0xFF1E222D).withOpacity(0.95),
+                const Color(0xFF0D1117).withOpacity(0.98),
+              ],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
             borderRadius: BorderRadius.vertical(top: Radius.circular(32.r)),
-            border: Border(top: BorderSide(color: AppColors.border, width: 1)),
+            border: Border(
+              top: BorderSide(color: Colors.white.withOpacity(0.1), width: 1),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.5),
+                blurRadius: 30,
+                spreadRadius: 5,
+              ),
+            ],
           ),
           child: SingleChildScrollView(
             child: Column(
@@ -97,20 +114,27 @@ class DashboardScreenState extends State<DashboardScreen>
               children: [
                 Center(
                   child: Container(
-                    width: 40.w,
-                    height: 4.h,
+                    width: 48.w,
+                    height: 5.h,
                     decoration: BoxDecoration(
-                      color: AppColors.textBody.withOpacity(0.3),
-                      borderRadius: BorderRadius.circular(2.r),
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(10.r),
                     ),
                   ),
                 ),
-                SizedBox(height: 24.h),
+                SizedBox(height: 32.h),
                 Text(
                   "Quick Actions",
-                  style: AppTypography.subHeading.copyWith(fontSize: 20.sp),
+                  style: AppTypography.heading.copyWith(fontSize: 22.sp),
                 ),
-                SizedBox(height: 24.h),
+                SizedBox(height: 8.h),
+                Text(
+                  "What would you like to do?",
+                  style: AppTypography.body.copyWith(
+                    color: AppColors.textBody.withOpacity(0.7),
+                  ),
+                ),
+                SizedBox(height: 32.h),
                 _buildActionItem(
                   context,
                   icon: Icons.account_balance_wallet_rounded,
@@ -124,7 +148,7 @@ class DashboardScreenState extends State<DashboardScreen>
                 ),
                 _buildActionItem(
                   context,
-                  icon: Icons.add_chart_rounded,
+                  icon: Icons.rocket_launch_rounded,
                   title: "Start New Trade",
                   subtitle: "Create a session and log your trades",
                   color: AppColors.primary,
@@ -329,7 +353,10 @@ class DashboardScreenState extends State<DashboardScreen>
       resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
-          const SideMenu(),
+          SideMenu(
+            selectedIndex: _selectedIndex,
+            onTabSelected: (index) => changePageIndex(index),
+          ),
           AnimatedBuilder(
             animation: _animationController,
             builder: (context, child) {

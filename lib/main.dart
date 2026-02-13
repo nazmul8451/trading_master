@@ -7,14 +7,11 @@ import 'feature/view/onboarding_screen/protocol_confirmation.dart';
 
 import 'package:device_preview/device_preview.dart';
 import 'package:flutter/foundation.dart';
+import 'package:get_storage/get_storage.dart';
 
-void main() {
-  runApp(
-    DevicePreview(
-      enabled: false,
-      builder: (context) => const MyApp(),
-    ),
-  );
+void main() async {
+  await GetStorage.init();
+  runApp(DevicePreview(enabled: false, builder: (context) => const MyApp()));
 }
 
 class MyApp extends StatelessWidget {
@@ -58,7 +55,8 @@ class MyApp extends StatelessWidget {
           initialRoute: AppRoutes.getStarted,
           routes: {
             AppRoutes.getStarted: (context) => const GetStartedScreen(),
-            AppRoutes.protocolConfirmation: (context) => const ProtocolConfirmationScreen(),
+            AppRoutes.protocolConfirmation: (context) =>
+                const ProtocolConfirmationScreen(),
             AppRoutes.dashboard: (context) => const DashboardScreen(),
           },
         );
@@ -66,4 +64,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
