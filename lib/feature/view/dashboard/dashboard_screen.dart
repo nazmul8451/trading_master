@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_typography.dart';
@@ -347,54 +348,99 @@ class DashboardScreenState extends State<DashboardScreen>
     );
   }
 
+  DateTime? _lastPressedAt;
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF1E222D), // Side menu background
-      resizeToAvoidBottomInset: false,
-      body: Stack(
-        children: [
-          RepaintBoundary(
-            child: SideMenu(
-              selectedIndex: _selectedIndex,
-              onTabSelected: (index) => changePageIndex(index),
-            ),
-          ),
-          AnimatedBuilder(
-            animation: _animationController,
-            builder: (context, child) {
-              double slide = 250.w * _animationController.value;
-              double scale = 1.0 - (_animationController.value * 0.15);
-              double radius = _animationController.value * 32.r;
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) async {
+        if (didPop) return;
 
-              return Transform(
-                transform: Matrix4.translationValues(slide, 0, 0)
-                  ..scale(scale, scale, 1.0),
-                alignment: Alignment.centerLeft,
-                child: GestureDetector(
-                  onTap: _isDrawerOpen ? toggleDrawer : null,
-                  behavior: HitTestBehavior.opaque,
-                  child: RepaintBoundary(
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(radius),
-                      child: AbsorbPointer(
-                        absorbing: _isDrawerOpen,
-                        child: Scaffold(
-                          backgroundColor: AppColors.background,
-                          body: IndexedStack(
-                            index: _selectedIndex,
-                            children: _screens,
+        // 1. Close drawer if open
+        if (_isDrawerOpen) {
+          toggleDrawer();
+          return;
+        }
+
+        // 2. Go to Home tab if on another tab
+        if (_selectedIndex != 0) {
+          changePageIndex(0);
+          return;
+        }
+
+        // 3. Double press to exit
+        final now = DateTime.now();
+        if (_lastPressedAt == null ||
+            now.difference(_lastPressedAt!) > const Duration(seconds: 2)) {
+          _lastPressedAt = now;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                "Press back again to exit",
+                style: AppTypography.bodySmall.copyWith(color: Colors.white),
+              ),
+              backgroundColor: AppColors.background,
+              duration: const Duration(seconds: 2),
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10.r),
+              ),
+            ),
+          );
+          return;
+        }
+
+        // 4. Exit app
+        SystemNavigator.pop();
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFF1E222D), // Side menu background
+        resizeToAvoidBottomInset: false,
+        body: Stack(
+          children: [
+            RepaintBoundary(
+              child: SideMenu(
+                selectedIndex: _selectedIndex,
+                onTabSelected: (index) => changePageIndex(index),
+              ),
+            ),
+            AnimatedBuilder(
+              animation: _animationController,
+              builder: (context, child) {
+                double slide = 250.w * _animationController.value;
+                double scale = 1.0 - (_animationController.value * 0.15);
+                double radius = _animationController.value * 32.r;
+
+                return Transform(
+                  transform: Matrix4.translationValues(slide, 0, 0)
+                    ..scale(scale, scale, 1.0),
+                  alignment: Alignment.centerLeft,
+                  child: GestureDetector(
+                    onTap: _isDrawerOpen ? toggleDrawer : null,
+                    behavior: HitTestBehavior.opaque,
+                    child: RepaintBoundary(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(radius),
+                        child: AbsorbPointer(
+                          absorbing: _isDrawerOpen,
+                          child: Scaffold(
+                            backgroundColor: AppColors.background,
+                            body: IndexedStack(
+                              index: _selectedIndex,
+                              children: _screens,
+                            ),
+                            bottomNavigationBar: _buildBottomBar(),
                           ),
-                          bottomNavigationBar: _buildBottomBar(),
                         ),
                       ),
                     ),
                   ),
-                ),
-              );
-            },
-          ),
-        ],
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -69,93 +69,95 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       body: PremiumBackground(
         child: Padding(
           padding: EdgeInsets.fromLTRB(20.w, 100.h, 20.w, 20.h),
-          child: Column(
-            children: [
-              GlassContainer(
-                padding: EdgeInsets.all(24.r),
-                borderRadius: 24.r,
-                child: Column(
-                  children: [
-                    Stack(
-                      alignment: Alignment.bottomRight,
-                      children: [
-                        Container(
-                          width: 100.sp,
-                          height: 100.sp,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: LinearGradient(
-                              colors: [AppColors.primary, Color(0xFF8B5CF6)],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppColors.primary.withOpacity(0.3),
-                                blurRadius: 20,
-                                offset: Offset(0, 10),
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                GlassContainer(
+                  padding: EdgeInsets.all(24.r),
+                  borderRadius: 24.r,
+                  child: Column(
+                    children: [
+                      Stack(
+                        alignment: Alignment.bottomRight,
+                        children: [
+                          Container(
+                            width: 100.sp,
+                            height: 100.sp,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: LinearGradient(
+                                colors: [AppColors.primary, Color(0xFF8B5CF6)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
                               ),
-                            ],
-                          ),
-                          child: Center(
-                            child: Text(
-                              _nameController.text.isNotEmpty
-                                  ? _nameController.text[0].toUpperCase()
-                                  : "U",
-                              style: TextStyle(
-                                fontSize: 40.sp,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.primary.withOpacity(0.3),
+                                  blurRadius: 20,
+                                  offset: Offset(0, 10),
+                                ),
+                              ],
+                            ),
+                            child: Center(
+                              child: Text(
+                                _nameController.text.isNotEmpty
+                                    ? _nameController.text[0].toUpperCase()
+                                    : "U",
+                                style: TextStyle(
+                                  fontSize: 40.sp,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                        Container(
-                          padding: EdgeInsets.all(8.r),
-                          decoration: BoxDecoration(
-                            color: AppColors.surface,
-                            shape: BoxShape.circle,
-                            border: Border.all(
+                          Container(
+                            padding: EdgeInsets.all(8.r),
+                            decoration: BoxDecoration(
+                              color: AppColors.surface,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: AppColors.primary,
+                                width: 2,
+                              ),
+                            ),
+                            child: Icon(
+                              Icons.camera_alt_outlined,
+                              size: 16.sp,
                               color: AppColors.primary,
-                              width: 2,
                             ),
                           ),
-                          child: Icon(
-                            Icons.camera_alt_outlined,
-                            size: 16.sp,
-                            color: AppColors.primary,
+                        ],
+                      ),
+                      SizedBox(height: 32.h),
+                      _buildTextField("Name", _nameController),
+                      SizedBox(height: 16.h),
+                      _buildTextField("Title / Role", _titleController),
+                      SizedBox(height: 32.h),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: _saveProfile,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: Colors.white,
+                            padding: EdgeInsets.symmetric(vertical: 16.h),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16.r),
+                            ),
+                            elevation: 0,
                           ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 32.h),
-                    _buildTextField("Name", _nameController),
-                    SizedBox(height: 16.h),
-                    _buildTextField("Title / Role", _titleController),
-                    SizedBox(height: 32.h),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: _saveProfile,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: Colors.white,
-                          padding: EdgeInsets.symmetric(vertical: 16.h),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16.r),
+                          child: Text(
+                            "Save Changes",
+                            style: AppTypography.buttonText,
                           ),
-                          elevation: 0,
-                        ),
-                        child: Text(
-                          "Save Changes",
-                          style: AppTypography.buttonText,
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
