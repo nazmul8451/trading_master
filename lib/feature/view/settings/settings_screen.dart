@@ -41,16 +41,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
           child: Column(
             children: [
               _buildProfileSection(),
-              SizedBox(height: 24.h),
+              SizedBox(height: 32.h),
+
               _buildSectionHeader("Account"),
               _buildSettingItem(
                 icon: Icons.account_balance_wallet_outlined,
+                iconColor: AppColors.primary,
                 title: "Wallet Management",
                 subtitle: "Update balance & currency",
                 onTap: () => _showWalletManager(context),
               ),
               _buildSettingItem(
                 icon: Icons.person_outline,
+                iconColor: const Color(0xFF8B5CF6),
                 title: "Personal Details",
                 subtitle: "Update name & profile",
                 onTap: () => Navigator.push(
@@ -59,21 +62,45 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ),
 
-              SizedBox(height: 24.h),
+              SizedBox(height: 16.h),
               _buildSectionHeader("Preferences"),
               ValueListenableBuilder<bool>(
                 valueListenable: PreferencesService.notificationsNotifier,
                 builder: (context, enabled, _) {
                   return _buildSettingItem(
                     icon: Icons.notifications_none_rounded,
+                    iconColor: const Color(0xFFF59E0B),
                     title: "Notifications",
                     subtitle: "Trade alerts & reminders",
                     trailing: Switch(
                       value: enabled,
                       onChanged: (val) =>
                           PreferencesService.setNotifications(val),
-                      activeThumbColor: AppColors.primary,
+                      activeColor: AppColors.primary,
+                      activeTrackColor: AppColors.primary.withOpacity(0.3),
                     ),
+                  );
+                },
+              ),
+              ValueListenableBuilder<ThemeMode>(
+                valueListenable: PreferencesService.themeModeNotifier,
+                builder: (context, mode, _) {
+                  String modeText = "System Default";
+                  IconData modeIcon = Icons.brightness_auto_rounded;
+                  if (mode == ThemeMode.light) {
+                    modeText = "Light Mode";
+                    modeIcon = Icons.light_mode_rounded;
+                  } else if (mode == ThemeMode.dark) {
+                    modeText = "Dark Mode";
+                    modeIcon = Icons.dark_mode_rounded;
+                  }
+
+                  return _buildSettingItem(
+                    icon: modeIcon,
+                    iconColor: AppColors.primary,
+                    title: "Theme Mode",
+                    subtitle: modeText,
+                    onTap: () => _showThemeSelector(context),
                   );
                 },
               ),
@@ -82,47 +109,52 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 builder: (context, enabled, _) {
                   return _buildSettingItem(
                     icon: Icons.fingerprint,
+                    iconColor: const Color(0xFF10B981),
                     title: "Biometric Login",
-                    subtitle: "Secure app with fingerprint",
+                    subtitle: "Secure app with biometric",
                     trailing: Switch(
                       value: enabled,
                       onChanged: (val) => PreferencesService.setBiometrics(val),
-                      activeThumbColor: AppColors.primary,
+                      activeColor: AppColors.primary,
+                      activeTrackColor: AppColors.primary.withOpacity(0.3),
                     ),
                   );
                 },
               ),
 
-              SizedBox(height: 24.h),
-              _buildSectionHeader("Data"),
+              SizedBox(height: 16.h),
+              _buildSectionHeader("System"),
               _buildSettingItem(
                 icon: Icons.download_outlined,
+                iconColor: const Color(0xFF6366F1),
                 title: "Export Data",
                 subtitle: "Download journal as CSV",
                 onTap: () => _handleExport(),
               ),
               _buildSettingItem(
                 icon: Icons.delete_outline,
+                iconColor: AppColors.error,
                 title: "Reset Data",
                 subtitle: "Clear all trades & plans",
                 isDestructive: true,
                 onTap: () => _confirmReset(),
               ),
 
-              SizedBox(height: 24.h),
-              _buildSectionHeader("About"),
+              SizedBox(height: 16.h),
+              _buildSectionHeader("Info"),
               _buildSettingItem(
                 icon: Icons.info_outline,
+                iconColor: Colors.white60,
                 title: "About App",
-                subtitle: "Version & Info",
+                subtitle: "Version & Developer info",
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_) => const AboutScreen()),
                 ),
               ),
-              SizedBox(height: 24.h),
               _buildSettingItem(
                 icon: Icons.logout_rounded,
+                iconColor: AppColors.error,
                 title: "Logout",
                 subtitle: "Sign out of your account",
                 isDestructive: true,
@@ -150,19 +182,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget _buildProfileSection() {
     return AnimatedEntrance(
       child: GlassContainer(
-        padding: EdgeInsets.all(20.r),
-        borderRadius: 20.r,
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
+        padding: EdgeInsets.all(24.r),
+        borderRadius: 24.r,
+        border: Border.all(color: Colors.white.withOpacity(0.08)),
+        color: Colors.white.withOpacity(0.03),
         child: Row(
           children: [
             Container(
-              width: 60.sp,
-              height: 60.sp,
+              width: 64.sp,
+              height: 64.sp,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: LinearGradient(
-                  colors: [AppColors.primary, Color(0xFF8B5CF6)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [AppColors.primary, const Color(0xFF8B5CF6)],
                 ),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withOpacity(0.2),
+                    blurRadius: 20,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
               child: Center(
                 child: ValueListenableBuilder<String>(
@@ -171,50 +213,71 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     return Text(
                       name.isNotEmpty ? name[0].toUpperCase() : "U",
                       style: TextStyle(
-                        fontSize: 24.sp,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 26.sp,
+                        fontWeight: FontWeight.w900,
                         color: Colors.white,
+                        letterSpacing: 1.2,
                       ),
                     );
                   },
                 ),
               ),
             ),
-            SizedBox(width: 16.w),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ValueListenableBuilder<String>(
-                  valueListenable: ProfileService.nameNotifier,
-                  builder: (context, name, _) {
-                    return Text(
-                      name,
-                      style: AppTypography.subHeading.copyWith(fontSize: 18.sp),
-                    );
-                  },
-                ),
-                SizedBox(height: 4.h),
-                ValueListenableBuilder<String>(
-                  valueListenable: ProfileService.titleNotifier,
-                  builder: (context, title, _) {
-                    return Text(
-                      title,
-                      style: AppTypography.body.copyWith(
-                        color: AppColors.textBody,
-                        fontSize: 14.sp,
-                      ),
-                    );
-                  },
-                ),
-              ],
+            SizedBox(width: 20.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ValueListenableBuilder<String>(
+                    valueListenable: ProfileService.nameNotifier,
+                    builder: (context, name, _) {
+                      return Text(
+                        name,
+                        style: AppTypography.heading.copyWith(
+                          fontSize: 20.sp,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      );
+                    },
+                  ),
+                  SizedBox(height: 4.h),
+                  ValueListenableBuilder<String>(
+                    valueListenable: ProfileService.titleNotifier,
+                    builder: (context, title, _) {
+                      return Text(
+                        title.toUpperCase(),
+                        style: AppTypography.label.copyWith(
+                          color: AppColors.getTextBody(
+                            context,
+                          ).withOpacity(0.5),
+                          fontSize: 11.sp,
+                          letterSpacing: 1.2,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
             ),
-            Spacer(),
-            IconButton(
-              onPressed: () => Navigator.push(
+            GestureDetector(
+              onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const ProfileEditScreen()),
               ),
-              icon: Icon(Icons.edit_outlined, color: AppColors.primary),
+              child: Container(
+                padding: EdgeInsets.all(10.r),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12.r),
+                  border: Border.all(color: AppColors.primary.withOpacity(0.1)),
+                ),
+                child: Icon(
+                  Icons.edit_note_rounded,
+                  color: AppColors.primary,
+                  size: 24.sp,
+                ),
+              ),
             ),
           ],
         ),
@@ -224,14 +287,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildSectionHeader(String title) {
     return Padding(
-      padding: EdgeInsets.only(bottom: 12.h, left: 4.w),
+      padding: EdgeInsets.only(bottom: 16.h, left: 8.w, top: 8.h),
       child: Align(
         alignment: Alignment.centerLeft,
         child: Text(
-          title,
-          style: AppTypography.subHeading.copyWith(
-            fontSize: 14.sp,
-            color: AppColors.textBody.withOpacity(0.7),
+          title.toUpperCase(),
+          style: AppTypography.label.copyWith(
+            fontSize: 11.sp,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 2.0,
+            color: AppColors.textBody.withOpacity(0.4),
           ),
         ),
       ),
@@ -242,56 +307,54 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required IconData icon,
     required String title,
     required String subtitle,
+    required Color iconColor,
     VoidCallback? onTap,
     Widget? trailing,
     bool isDestructive = false,
   }) {
     return AnimatedEntrance(
-      delay: Duration(milliseconds: 100),
+      delay: const Duration(milliseconds: 100),
       child: Container(
-        margin: EdgeInsets.only(bottom: 12.h),
+        margin: EdgeInsets.only(bottom: 14.h),
         child: GlassContainer(
-          borderRadius: 16.r,
-          padding: EdgeInsets.zero, // Handle padding in InkWell
-          color: Colors.white.withOpacity(0.03),
+          borderRadius: 20.r,
+          padding: EdgeInsets.zero,
+          color: Colors.white.withOpacity(0.02),
           border: Border.all(color: Colors.white.withOpacity(0.05)),
           child: Material(
             color: Colors.transparent,
             child: InkWell(
               onTap: onTap,
-              borderRadius: BorderRadius.circular(16.r),
+              borderRadius: BorderRadius.circular(20.r),
               child: Padding(
-                padding: EdgeInsets.all(16.r),
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 18.h),
                 child: Row(
                   children: [
                     Container(
-                      padding: EdgeInsets.all(10.r),
+                      padding: EdgeInsets.all(12.r),
                       decoration: BoxDecoration(
-                        color: isDestructive
-                            ? AppColors.error.withOpacity(0.1)
-                            : AppColors.primary.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12.r),
+                        color: iconColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(14.r),
+                        border: Border.all(color: iconColor.withOpacity(0.1)),
                       ),
-                      child: Icon(
-                        icon,
-                        size: 20.sp,
-                        color: isDestructive
-                            ? AppColors.error
-                            : AppColors.primary,
-                      ),
+                      child: Icon(icon, size: 22.sp, color: iconColor),
                     ),
-                    SizedBox(width: 16.w),
+                    SizedBox(width: 18.w),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             title,
-                            style: AppTypography.buttonText.copyWith(
+                            style: AppTypography.heading.copyWith(
                               fontSize: 16.sp,
+                              fontWeight: FontWeight.w700,
                               color: isDestructive
                                   ? AppColors.error
-                                  : AppColors.textMain,
+                                  : Theme.of(context).brightness ==
+                                        Brightness.dark
+                                  ? Colors.white.withOpacity(0.9)
+                                  : Colors.black.withOpacity(0.9),
                             ),
                           ),
                           SizedBox(height: 4.h),
@@ -299,7 +362,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             subtitle,
                             style: AppTypography.body.copyWith(
                               fontSize: 12.sp,
-                              color: AppColors.textBody,
+                              color: AppColors.getTextBody(
+                                context,
+                              ).withOpacity(0.6),
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ],
@@ -309,9 +375,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       trailing
                     else
                       Icon(
-                        Icons.chevron_right, // Fixed: removed .outlined
-                        size: 20.sp,
-                        color: AppColors.textBody.withOpacity(0.5),
+                        Icons.chevron_right_rounded,
+                        size: 22.sp,
+                        color: AppColors.textBody.withOpacity(0.3),
                       ),
                   ],
                 ),
@@ -478,6 +544,78 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  void _showThemeSelector(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (context) => Container(
+        padding: EdgeInsets.symmetric(vertical: 24.h),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              "Choose Theme",
+              style: AppTypography.heading.copyWith(fontSize: 20.sp),
+            ),
+            SizedBox(height: 20.h),
+            _buildThemeOption(
+              context,
+              ThemeMode.light,
+              "Light Mode",
+              Icons.light_mode_rounded,
+            ),
+            _buildThemeOption(
+              context,
+              ThemeMode.dark,
+              "Dark Mode",
+              Icons.dark_mode_rounded,
+            ),
+            _buildThemeOption(
+              context,
+              ThemeMode.system,
+              "System Default",
+              Icons.brightness_auto_rounded,
+            ),
+            SizedBox(height: 20.h),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildThemeOption(
+    BuildContext context,
+    ThemeMode mode,
+    String title,
+    IconData icon,
+  ) {
+    final currentMode = PreferencesService.themeMode;
+    final isSelected = currentMode == mode;
+
+    return ListTile(
+      leading: Icon(
+        icon,
+        color: isSelected ? AppColors.primary : AppColors.textBody,
+      ),
+      title: Text(
+        title,
+        style: AppTypography.buttonText.copyWith(
+          color: isSelected ? AppColors.primary : AppColors.textMain,
+        ),
+      ),
+      trailing: isSelected
+          ? Icon(Icons.check_circle, color: AppColors.primary)
+          : null,
+      onTap: () {
+        PreferencesService.setThemeMode(mode);
+        Navigator.pop(context);
+      },
     );
   }
 }

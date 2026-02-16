@@ -28,22 +28,30 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
     super.initState();
     if (widget.existingNote != null) {
       _titleController.text = widget.existingNote!.title ?? '';
-      _contentController.text = widget.existingNote!.content ?? widget.existingNote!.note;
+      _contentController.text =
+          widget.existingNote!.content ?? widget.existingNote!.note;
     }
   }
 
   Future<void> _saveNote() async {
-    if (_titleController.text.isEmpty && _contentController.text.isEmpty) return;
+    if (_titleController.text.isEmpty && _contentController.text.isEmpty)
+      return;
 
     setState(() => _isAutoSaving = true);
 
     final note = JournalModel(
-      id: widget.existingNote?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
+      id:
+          widget.existingNote?.id ??
+          DateTime.now().millisecondsSinceEpoch.toString(),
       date: DateTime.now(),
       emotion: widget.existingNote?.emotion ?? 'Calm',
-      note: _contentController.text.length > 50 ? _contentController.text.substring(0, 50) : _contentController.text,
+      note: _contentController.text.length > 50
+          ? _contentController.text.substring(0, 50)
+          : _contentController.text,
       content: _contentController.text,
-      title: _titleController.text.isEmpty ? 'Untitled Note' : _titleController.text,
+      title: _titleController.text.isEmpty
+          ? 'Untitled Note'
+          : _titleController.text,
       type: 'custom',
       folderId: widget.folderId ?? widget.existingNote?.folderId,
     );
@@ -62,10 +70,20 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
     final text = _contentController.text;
     final selection = _contentController.selection;
     final selectedText = selection.textInside(text);
-    final newText = text.replaceRange(selection.start, selection.end, '$prefix$selectedText$suffix');
+    final newText = text.replaceRange(
+      selection.start,
+      selection.end,
+      '$prefix$selectedText$suffix',
+    );
     _contentController.value = TextEditingValue(
       text: newText,
-      selection: TextSelection.collapsed(offset: selection.start + prefix.length + selectedText.length + suffix.length),
+      selection: TextSelection.collapsed(
+        offset:
+            selection.start +
+            prefix.length +
+            selectedText.length +
+            suffix.length,
+      ),
     );
     _contentFocus.requestFocus();
   }
@@ -78,7 +96,11 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textMain, size: 20.sp),
+          icon: Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: AppColors.textMain,
+            size: 20.sp,
+          ),
           onPressed: () async {
             await _saveNote();
             if (mounted) Navigator.pop(context, true);
@@ -86,14 +108,29 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
         ),
         actions: [
           if (_isAutoSaving)
-            const Center(child: Padding(padding: EdgeInsets.only(right: 16), child: SizedBox(width: 15, height: 15, child: CircularProgressIndicator(strokeWidth: 2))))
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.only(right: 16),
+                child: SizedBox(
+                  width: 15,
+                  height: 15,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              ),
+            )
           else
             TextButton(
               onPressed: () async {
                 await _saveNote();
                 if (mounted) Navigator.pop(context, true);
               },
-              child: Text('Done', style: AppTypography.buttonText.copyWith(color: AppColors.primary, fontSize: 14.sp)),
+              child: Text(
+                'Done',
+                style: AppTypography.buttonText.copyWith(
+                  color: AppColors.primary,
+                  fontSize: 14.sp,
+                ),
+              ),
             ),
         ],
       ),
@@ -107,26 +144,40 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                 children: [
                   TextField(
                     controller: _titleController,
-                    style: AppTypography.heading.copyWith(fontSize: 28.sp, fontWeight: FontWeight.bold, letterSpacing: -0.5),
+                    style: AppTypography.heading.copyWith(
+                      fontSize: 28.sp,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: -0.5,
+                    ),
                     decoration: InputDecoration(
                       hintText: 'Note Title',
-                      hintStyle: TextStyle(color: AppColors.textBody.withOpacity(0.2)),
+                      hintStyle: TextStyle(
+                        color: AppColors.textBody.withOpacity(0.2),
+                      ),
                       border: InputBorder.none,
                     ),
                     maxLines: null,
                   ),
                   Text(
                     DateFormat('MMMM dd, hh:mm a').format(DateTime.now()),
-                    style: AppTypography.bodySmall.copyWith(color: AppColors.textBody.withOpacity(0.5)),
+                    style: AppTypography.bodySmall.copyWith(
+                      color: AppColors.textBody.withOpacity(0.5),
+                    ),
                   ),
                   SizedBox(height: 24.h),
                   TextField(
                     controller: _contentController,
                     focusNode: _contentFocus,
-                    style: AppTypography.body.copyWith(fontSize: 16.sp, height: 1.6, color: AppColors.textMain.withOpacity(0.9)),
+                    style: AppTypography.body.copyWith(
+                      fontSize: 16.sp,
+                      height: 1.6,
+                      color: AppColors.textMain.withOpacity(0.9),
+                    ),
                     decoration: InputDecoration(
                       hintText: 'Start writing your notes...',
-                      hintStyle: TextStyle(color: AppColors.textBody.withOpacity(0.2)),
+                      hintStyle: TextStyle(
+                        color: AppColors.textBody.withOpacity(0.2),
+                      ),
                       border: InputBorder.none,
                     ),
                     maxLines: null,
@@ -150,12 +201,27 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
       ),
       child: Row(
         children: [
-          _buildToolbarIcon(Icons.format_underlined_rounded, () => _insertFormat('_', '_')),
-          _buildToolbarIcon(Icons.format_list_bulleted_rounded, () => _insertFormat('\n• ')),
-          _buildToolbarIcon(Icons.format_bold_rounded, () => _insertFormat('**', '**')),
-          _buildToolbarIcon(Icons.format_italic_rounded, () => _insertFormat('*', '*')),
+          _buildToolbarIcon(
+            Icons.format_underlined_rounded,
+            () => _insertFormat('_', '_'),
+          ),
+          _buildToolbarIcon(
+            Icons.format_list_bulleted_rounded,
+            () => _insertFormat('\n• '),
+          ),
+          _buildToolbarIcon(
+            Icons.format_bold_rounded,
+            () => _insertFormat('**', '**'),
+          ),
+          _buildToolbarIcon(
+            Icons.format_italic_rounded,
+            () => _insertFormat('*', '*'),
+          ),
           const Spacer(),
-          _buildToolbarIcon(Icons.keyboard_hide_rounded, () => _contentFocus.unfocus()),
+          _buildToolbarIcon(
+            Icons.keyboard_hide_rounded,
+            () => _contentFocus.unfocus(),
+          ),
         ],
       ),
     );

@@ -499,7 +499,7 @@ class _JournalScreenState extends State<JournalScreen> {
                 '${_folders.length} Folders',
                 style: AppTypography.bodySmall.copyWith(
                   color: AppColors.primary,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w900,
                   fontSize: 10.sp,
                 ),
               ),

@@ -11,4 +11,12 @@ class AppColors {
   static const Color textBody = Color(0xFF8B949E);
   static const Color textMain = Colors.white;
   static const Color border = Color(0xFF30363D);
+
+  static Color getTextBody(BuildContext context) {
+    if (Theme.of(context).brightness == Brightness.dark) {
+      return textBody;
+    } else {
+      return const Color(0xFF4B5563); // Darker grey for light mode
+    }
+  }
 }

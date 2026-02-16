@@ -93,7 +93,11 @@ class _AboutScreenState extends State<AboutScreen> {
                     SizedBox(height: 24.h),
                     Text(
                       "Trading Master",
-                      style: AppTypography.heading.copyWith(fontSize: 24.sp),
+                      style: AppTypography.heading.copyWith(
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                      ),
                     ),
                     SizedBox(height: 8.h),
                     Text(
@@ -107,7 +111,7 @@ class _AboutScreenState extends State<AboutScreen> {
                     SizedBox(height: 16.h),
                     _buildInfoRow("Developer", "Rimon Islam"),
                     SizedBox(height: 16.h),
-                    _buildInfoRow("Contact", "support@tradingmaster.com"),
+                    _buildInfoRow("Contact", "rimon124567@gmail.com"),
                     SizedBox(height: 32.h),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,

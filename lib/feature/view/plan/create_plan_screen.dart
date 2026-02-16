@@ -105,16 +105,27 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  SizedBox(height: 100.h), // Spacing for AppBar
+                  SizedBox(height: 20.h), // Spacing for AppBar
                   AnimatedEntrance(
                     duration: const Duration(milliseconds: 600),
                     child: Column(
                       children: [
                         Container(
-                          padding: EdgeInsets.all(20.r),
+                          padding: EdgeInsets.all(24.r),
                           decoration: BoxDecoration(
-                            color: AppColors.primary.withOpacity(0.1),
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                AppColors.primary.withOpacity(0.2),
+                                AppColors.primary.withOpacity(0.05),
+                              ],
+                            ),
                             shape: BoxShape.circle,
+                            border: Border.all(
+                              color: AppColors.primary.withOpacity(0.2),
+                              width: 2,
+                            ),
                             boxShadow: [
                               BoxShadow(
                                 color: AppColors.primary.withOpacity(0.2),
@@ -124,30 +135,34 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
                             ],
                           ),
                           child: Icon(
-                            Icons.rocket_launch,
+                            Icons.auto_graph_rounded,
                             size: 48.sp,
                             color: AppColors.primary,
                           ),
                         ),
-                        SizedBox(height: 24.h),
+                        SizedBox(height: 28.h),
                         Text(
                           'Plan Your Success',
                           style: AppTypography.heading.copyWith(
-                            fontSize: 32.sp,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: -1,
+                            fontSize: 34.sp,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: -1.2,
+                            color: Colors.white,
                           ),
                           textAlign: TextAlign.center,
                         ),
                         SizedBox(height: 12.h),
-                        Text(
-                          'Define your trading parameters and visualize the power of compounding.',
-                          style: AppTypography.body.copyWith(
-                            fontSize: 16.sp,
-                            color: AppColors.textBody.withOpacity(0.8),
-                            height: 1.5,
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 20.w),
+                          child: Text(
+                            'Define your trading parameters and visualize the power of compounding.',
+                            style: AppTypography.body.copyWith(
+                              fontSize: 15.sp,
+                              color: AppColors.textBody.withOpacity(0.7),
+                              height: 1.6,
+                            ),
+                            textAlign: TextAlign.center,
                           ),
-                          textAlign: TextAlign.center,
                         ),
                       ],
                     ),
@@ -158,22 +173,26 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
                   AnimatedEntrance(
                     delay: const Duration(milliseconds: 200),
                     child: GlassContainer(
-                      padding: EdgeInsets.all(24.r),
-                      borderRadius: 24.r,
-                      color: AppColors.surface.withOpacity(0.4),
+                      padding: EdgeInsets.all(28.r),
+                      borderRadius: 32.r,
+                      color: AppColors.surface.withOpacity(0.3),
                       border: Border.all(color: Colors.white.withOpacity(0.08)),
                       child: Column(
                         children: [
                           _buildFieldContainer(
                             label: 'Starting Capital',
+                            icon: Icons.account_balance_wallet_outlined,
+                            iconColor: AppColors.primary,
                             child: Row(
                               children: [
                                 _buildCurrencyDropdown(),
+                                SizedBox(width: 12.w),
                                 Expanded(
                                   child: TextFormField(
                                     controller: _capitalController,
                                     style: AppTypography.heading.copyWith(
-                                      fontSize: 24.sp,
+                                      fontSize: 26.sp,
+                                      fontWeight: FontWeight.bold,
                                     ),
                                     keyboardType:
                                         const TextInputType.numberWithOptions(
@@ -189,25 +208,19 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
                               ],
                             ),
                           ),
-                          Divider(
-                            color: Colors.white.withOpacity(0.05),
-                            height: 32.h,
-                          ),
+                          _buildCustomDivider(),
                           _buildFieldContainer(
-                            label: 'Daily Target (%)',
+                            label: 'Daily Target Profit',
+                            icon: Icons.trending_up_rounded,
+                            iconColor: AppColors.success,
                             child: Row(
                               children: [
-                                Icon(
-                                  Icons.pie_chart,
-                                  color: AppColors.accentBlue,
-                                  size: 20.sp,
-                                ),
-                                SizedBox(width: 12.w),
                                 Expanded(
                                   child: TextFormField(
                                     controller: _targetController,
                                     style: AppTypography.heading.copyWith(
-                                      fontSize: 24.sp,
+                                      fontSize: 26.sp,
+                                      fontWeight: FontWeight.bold,
                                     ),
                                     keyboardType:
                                         const TextInputType.numberWithOptions(
@@ -218,56 +231,56 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
                                     decoration: _slimmestInputDecoration('2.5'),
                                   ),
                                 ),
-                                Text(
-                                  '%',
-                                  style: AppTypography.heading.copyWith(
-                                    fontSize: 24.sp,
-                                    color: AppColors.textBody,
+                                Container(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 8.w,
+                                    vertical: 4.h,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.success.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(8.r),
+                                  ),
+                                  child: Text(
+                                    '%',
+                                    style: AppTypography.heading.copyWith(
+                                      fontSize: 20.sp,
+                                      color: AppColors.success,
+                                    ),
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                          Divider(
-                            color: Colors.white.withOpacity(0.05),
-                            height: 32.h,
-                          ),
+                          _buildCustomDivider(),
                           Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Expanded(
                                 flex: 3,
                                 child: _buildFieldContainer(
-                                  label: 'Duration',
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        Icons.timer,
-                                        color: AppColors.success,
-                                        size: 20.sp,
-                                      ),
-                                      SizedBox(width: 12.w),
-                                      Expanded(
-                                        child: TextFormField(
-                                          controller: _durationController,
-                                          style: AppTypography.heading.copyWith(
-                                            fontSize: 24.sp,
-                                          ),
-                                          keyboardType: TextInputType.number,
-                                          validator: (val) =>
-                                              val!.isEmpty ? 'Required' : null,
-                                          decoration: _slimmestInputDecoration(
-                                            '30',
-                                          ),
-                                        ),
-                                      ),
-                                    ],
+                                  label: 'Growth Period',
+                                  icon: Icons.calendar_month_outlined,
+                                  iconColor: AppColors.accentBlue,
+                                  child: TextFormField(
+                                    controller: _durationController,
+                                    style: AppTypography.heading.copyWith(
+                                      fontSize: 26.sp,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    keyboardType: TextInputType.number,
+                                    validator: (val) =>
+                                        val!.isEmpty ? 'Required' : null,
+                                    decoration: _slimmestInputDecoration('30'),
                                   ),
                                 ),
                               ),
-                              SizedBox(width: 16.w),
+                              SizedBox(width: 20.w),
                               Expanded(
                                 flex: 2,
-                                child: _buildDurationTypeDropdown(),
+                                child: Padding(
+                                  padding: EdgeInsets.only(top: 26.h),
+                                  child: _buildDurationTypeDropdown(),
+                                ),
                               ),
                             ],
                           ),
@@ -282,18 +295,22 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
                   AnimatedEntrance(
                     delay: const Duration(milliseconds: 400),
                     child: Container(
+                      height: 64.h,
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20.r),
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF2369FF), Color(0xFF0044D6)],
+                        borderRadius: BorderRadius.circular(24.r),
+                        gradient: LinearGradient(
+                          colors: [
+                            AppColors.primary,
+                            AppColors.primary.withOpacity(0.8),
+                          ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF2369FF).withOpacity(0.4),
-                            blurRadius: 20,
-                            offset: const Offset(0, 10),
+                            color: AppColors.primary.withOpacity(0.3),
+                            blurRadius: 24,
+                            offset: const Offset(0, 8),
                           ),
                         ],
                       ),
@@ -303,9 +320,8 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
                           backgroundColor: Colors.transparent,
                           foregroundColor: Colors.white,
                           shadowColor: Colors.transparent,
-                          padding: EdgeInsets.symmetric(vertical: 22.h),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20.r),
+                            borderRadius: BorderRadius.circular(24.r),
                           ),
                         ),
                         child: Row(
@@ -315,12 +331,12 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
                               'Generate Blueprint',
                               style: AppTypography.buttonText.copyWith(
                                 fontSize: 18.sp,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 0.5,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 0.8,
                               ),
                             ),
-                            SizedBox(width: 8.w),
-                            const Icon(Icons.arrow_forward_rounded),
+                            SizedBox(width: 12.w),
+                            Icon(Icons.auto_awesome_rounded, size: 22.sp),
                           ],
                         ),
                       ),
@@ -353,59 +369,97 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
     );
   }
 
-  Widget _buildFieldContainer({required String label, required Widget child}) {
+  Widget _buildFieldContainer({
+    required String label,
+    required Widget child,
+    required IconData icon,
+    required Color iconColor,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label.toUpperCase(),
-          style: AppTypography.label.copyWith(
-            fontSize: 10.sp,
-            color: AppColors.textBody.withOpacity(0.7),
-            fontWeight: FontWeight.w700,
-            letterSpacing: 1.2,
-          ),
+        Row(
+          children: [
+            Icon(icon, size: 14.sp, color: iconColor.withOpacity(0.8)),
+            SizedBox(width: 8.w),
+            Text(
+              label.toUpperCase(),
+              style: AppTypography.label.copyWith(
+                fontSize: 11.sp,
+                color: AppColors.textBody.withOpacity(0.6),
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1.5,
+              ),
+            ),
+          ],
         ),
-        SizedBox(height: 8.h),
+        SizedBox(height: 12.h),
         child,
       ],
     );
   }
 
-  Widget _buildCurrencyDropdown() {
-    return DropdownButtonHideUnderline(
-      child: DropdownButton<String>(
-        value: _selectedCurrency,
-        dropdownColor: AppColors.surface,
-        icon: Icon(
-          Icons.keyboard_arrow_down,
-          size: 16.sp,
-          color: AppColors.textBody,
+  Widget _buildCustomDivider() {
+    return Container(
+      margin: EdgeInsets.symmetric(vertical: 24.h),
+      height: 1,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Colors.white.withOpacity(0.0),
+            Colors.white.withOpacity(0.1),
+            Colors.white.withOpacity(0.0),
+          ],
         ),
-        style: AppTypography.heading.copyWith(fontSize: 24.sp),
-        items: _currencies.map((String currency) {
-          return DropdownMenuItem<String>(
-            value: currency,
-            child: Text(currency),
-          );
-        }).toList(),
-        onChanged: (String? newValue) {
-          if (newValue != null) {
-            setState(() {
-              _selectedCurrency = newValue;
-            });
-          }
-        },
+      ),
+    );
+  }
+
+  Widget _buildCurrencyDropdown() {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(12.r),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: _selectedCurrency,
+          dropdownColor: AppColors.surface,
+          icon: Icon(
+            Icons.keyboard_arrow_down_rounded,
+            size: 18.sp,
+            color: AppColors.textBody,
+          ),
+          style: AppTypography.heading.copyWith(
+            fontSize: 22.sp,
+            fontWeight: FontWeight.bold,
+            color: AppColors.primary,
+          ),
+          items: _currencies.map((String currency) {
+            return DropdownMenuItem<String>(
+              value: currency,
+              child: Text(currency),
+            );
+          }).toList(),
+          onChanged: (String? newValue) {
+            if (newValue != null) {
+              setState(() {
+                _selectedCurrency = newValue;
+              });
+            }
+          },
+        ),
       ),
     );
   }
 
   Widget _buildDurationTypeDropdown() {
     return Container(
-      height: 60.h,
-      padding: EdgeInsets.symmetric(horizontal: 16.w),
+      height: 54.h,
+      padding: EdgeInsets.symmetric(horizontal: 14.w),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.2),
+        color: Colors.white.withOpacity(0.05),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: Colors.white.withOpacity(0.05)),
       ),
@@ -416,14 +470,14 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
             isExpanded: true,
             dropdownColor: AppColors.surface,
             icon: Icon(
-              Icons.keyboard_arrow_down,
-              color: AppColors.textBody,
+              Icons.unfold_more_rounded,
+              color: AppColors.textBody.withOpacity(0.5),
               size: 20.sp,
             ),
             style: AppTypography.body.copyWith(
               fontSize: 14.sp,
-              color: AppColors.textMain,
-              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              fontWeight: FontWeight.w800,
             ),
             items: [
               'Days',

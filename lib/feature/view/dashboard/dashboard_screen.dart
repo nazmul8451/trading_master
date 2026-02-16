@@ -354,9 +354,11 @@ class DashboardScreenState extends State<DashboardScreen>
       resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
-          SideMenu(
-            selectedIndex: _selectedIndex,
-            onTabSelected: (index) => changePageIndex(index),
+          RepaintBoundary(
+            child: SideMenu(
+              selectedIndex: _selectedIndex,
+              onTabSelected: (index) => changePageIndex(index),
+            ),
           ),
           AnimatedBuilder(
             animation: _animationController,
@@ -372,17 +374,19 @@ class DashboardScreenState extends State<DashboardScreen>
                 child: GestureDetector(
                   onTap: _isDrawerOpen ? toggleDrawer : null,
                   behavior: HitTestBehavior.opaque,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(radius),
-                    child: AbsorbPointer(
-                      absorbing: _isDrawerOpen,
-                      child: Scaffold(
-                        backgroundColor: AppColors.background,
-                        body: IndexedStack(
-                          index: _selectedIndex,
-                          children: _screens,
+                  child: RepaintBoundary(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(radius),
+                      child: AbsorbPointer(
+                        absorbing: _isDrawerOpen,
+                        child: Scaffold(
+                          backgroundColor: AppColors.background,
+                          body: IndexedStack(
+                            index: _selectedIndex,
+                            children: _screens,
+                          ),
+                          bottomNavigationBar: _buildBottomBar(),
                         ),
-                        bottomNavigationBar: _buildBottomBar(),
                       ),
                     ),
                   ),

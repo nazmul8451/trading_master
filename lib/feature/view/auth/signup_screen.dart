@@ -3,7 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../../core/routes/app_routes.dart';
-import '../../service/auth_service.dart';
+import 'package:get_storage/get_storage.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -17,7 +17,6 @@ class _SignupScreenState extends State<SignupScreen> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _authService = AuthService();
   bool _isLoading = false;
   bool _obscurePassword = true;
 
@@ -30,16 +29,14 @@ class _SignupScreenState extends State<SignupScreen> {
   }
 
   Future<void> _handleSignup() async {
-    if (!_formKey.currentState!.validate()) return;
-
     setState(() => _isLoading = true);
 
     try {
-      await _authService.signUp(
-        email: _emailController.text.trim(),
-        password: _passwordController.text,
-        name: _nameController.text.trim(),
-      );
+      // Bypassing Firebase Auth and directly setting login state
+      final storage = GetStorage();
+      await storage.write('is_logged_in', true);
+      await storage.write('user_name', _nameController.text.trim());
+      await storage.write('user_email', _emailController.text.trim());
 
       if (mounted) {
         Navigator.pushReplacementNamed(context, AppRoutes.dashboard);
