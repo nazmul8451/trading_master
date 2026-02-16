@@ -3,7 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_typography.dart';
 import '../bottomNavigations_screen/home_screen.dart';
-import '../bottomNavigations_screen/plane.dart';
+import '../bottomNavigations_screen/plan_tab_screen.dart';
 import '../bottomNavigations_screen/analytics.dart';
 import '../trade/trade_setup_screen.dart';
 import '../journal/journal_screen.dart';
@@ -59,7 +59,7 @@ class DashboardScreenState extends State<DashboardScreen>
     const HomeScreen(),
     const AnalyticsScreen(),
     const Center(child: Text("Log Trade")),
-    const PlaneScreen(),
+    const PlanTabScreen(),
     const SettingsScreen(),
   ];
 

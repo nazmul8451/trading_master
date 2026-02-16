@@ -13,6 +13,7 @@ class GlassContainer extends StatelessWidget {
   final double blur;
   final Border? border;
   final List<BoxShadow>? boxShadow;
+  final bool useBackdropFilter;
 
   const GlassContainer({
     super.key,
@@ -26,10 +27,24 @@ class GlassContainer extends StatelessWidget {
     this.blur = 10.0,
     this.border,
     this.boxShadow,
+    this.useBackdropFilter = false, // Default to false for better performance
   });
 
   @override
   Widget build(BuildContext context) {
+    final containerDecoration = BoxDecoration(
+      color: color ?? AppColors.surface.withOpacity(0.7),
+      borderRadius: BorderRadius.circular(borderRadius),
+      border:
+          border ?? Border.all(color: Colors.white.withOpacity(0.1), width: 1),
+    );
+
+    final content = Container(
+      padding: padding,
+      decoration: containerDecoration,
+      child: child,
+    );
+
     return Container(
       width: width,
       height: height,
@@ -47,23 +62,18 @@ class GlassContainer extends StatelessWidget {
               ),
             ],
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(borderRadius),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
-          child: Container(
-            padding: padding,
-            decoration: BoxDecoration(
-              color: color ?? AppColors.surface.withOpacity(0.7),
+      child: useBackdropFilter
+          ? ClipRRect(
               borderRadius: BorderRadius.circular(borderRadius),
-              border:
-                  border ??
-                  Border.all(color: Colors.white.withOpacity(0.1), width: 1),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
+                child: content,
+              ),
+            )
+          : ClipRRect(
+              borderRadius: BorderRadius.circular(borderRadius),
+              child: content,
             ),
-            child: child,
-          ),
-        ),
-      ),
     );
   }
 }

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../plan/create_plan_screen.dart';
 
-class PlaneScreen extends StatelessWidget {
-  const PlaneScreen({super.key});
+class PlanTabScreen extends StatelessWidget {
+  const PlanTabScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

@@ -2,16 +2,30 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'core/routes/app_routes.dart';
 import 'feature/view/dashboard/dashboard_screen.dart';
-import 'feature/view/onboarding_screen/get_started.dart';
-import 'feature/view/onboarding_screen/protocol_confirmation.dart';
+import 'feature/view/auth/splash_screen.dart';
+import 'feature/view/auth/login_screen.dart';
+import 'feature/view/auth/signup_screen.dart';
 
 import 'package:device_preview/device_preview.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get_storage/get_storage.dart';
 
+// Firebase
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Firebase
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
   await GetStorage.init();
-  runApp(DevicePreview(enabled: false, builder: (context) => const MyApp()));
+  runApp(
+    kDebugMode
+        ? DevicePreview(enabled: false, builder: (context) => const MyApp())
+        : const MyApp(),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -25,9 +39,8 @@ class MyApp extends StatelessWidget {
       splitScreenMode: true,
       builder: (_, child) {
         return MaterialApp(
-          useInheritedMediaQuery: true,
-          locale: DevicePreview.locale(context),
-          builder: DevicePreview.appBuilder,
+          locale: kDebugMode ? DevicePreview.locale(context) : null,
+          builder: kDebugMode ? DevicePreview.appBuilder : null,
           debugShowCheckedModeBanner: false,
           title: 'Trade Manager',
           theme: ThemeData(
@@ -52,11 +65,11 @@ class MyApp extends StatelessWidget {
               ),
             ),
           ),
-          initialRoute: AppRoutes.getStarted,
+          initialRoute: AppRoutes.splash,
           routes: {
-            AppRoutes.getStarted: (context) => const GetStartedScreen(),
-            AppRoutes.protocolConfirmation: (context) =>
-                const ProtocolConfirmationScreen(),
+            AppRoutes.splash: (context) => const SplashScreen(),
+            AppRoutes.login: (context) => const LoginScreen(),
+            AppRoutes.signup: (context) => const SignupScreen(),
             AppRoutes.dashboard: (context) => const DashboardScreen(),
           },
         );

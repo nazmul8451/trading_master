@@ -1,5 +1,6 @@
 class AppRoutes {
-  static const String getStarted = '/';
-  static const String protocolConfirmation = '/protocol-confirmation';
+  static const String splash = '/';
+  static const String login = '/login';
+  static const String signup = '/signup';
   static const String dashboard = '/dashboard';
 }

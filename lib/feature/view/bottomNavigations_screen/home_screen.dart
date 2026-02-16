@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../core/constants/app_colors.dart';
@@ -23,12 +22,13 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   double _balance = 0.0;
-  String _userName = "Rimon islam"; // Default or fetched
+  String _userName = "Trader"; // Default or fetched
 
   @override
   void initState() {
     super.initState();
     _balance = WalletService.balance;
+    _userName = GetStorage().read('user_name') ?? "Trader";
     GetStorage().listenKey('available_balance', (value) {
       if (mounted) {
         setState(() {

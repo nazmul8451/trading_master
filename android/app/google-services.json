@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "7064578971",
+    "firebase_url": "https://trade-manager-29a9d-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "trade-manager-29a9d",
+    "storage_bucket": "trade-manager-29a9d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:7064578971:android:c974947ff1c4d6313e4f3e",
+        "android_client_info": {
+          "package_name": "com.example.trade_manager"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDcXNtTrNgY1Q_PlEolhfoZThJqoswKyMA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

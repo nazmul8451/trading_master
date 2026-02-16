@@ -6,6 +6,13 @@ import '../../../core/widgets/premium_background.dart';
 import '../../../core/widgets/glass_container.dart';
 import '../../../core/widgets/animated_entrance.dart';
 import '../../service/wallet_service.dart';
+import '../../service/profile_service.dart';
+import '../../service/preferences_service.dart';
+import '../../service/data_service.dart';
+import 'sub_screens/profile_edit_screen.dart';
+import 'sub_screens/about_screen.dart';
+import '../../service/auth_service.dart';
+import '../../../core/routes/app_routes.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -15,9 +22,6 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  bool _notificationsEnabled = true;
-  bool _biometricEnabled = false;
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -49,31 +53,44 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 icon: Icons.person_outline,
                 title: "Personal Details",
                 subtitle: "Update name & profile",
-                onTap: () {},
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const ProfileEditScreen()),
+                ),
               ),
 
               SizedBox(height: 24.h),
               _buildSectionHeader("Preferences"),
-              _buildSettingItem(
-                icon: Icons.notifications_none_rounded,
-                title: "Notifications",
-                subtitle: "Trade alerts & reminders",
-                trailing: Switch(
-                  value: _notificationsEnabled,
-                  onChanged: (val) =>
-                      setState(() => _notificationsEnabled = val),
-                  activeColor: AppColors.primary,
-                ),
+              ValueListenableBuilder<bool>(
+                valueListenable: PreferencesService.notificationsNotifier,
+                builder: (context, enabled, _) {
+                  return _buildSettingItem(
+                    icon: Icons.notifications_none_rounded,
+                    title: "Notifications",
+                    subtitle: "Trade alerts & reminders",
+                    trailing: Switch(
+                      value: enabled,
+                      onChanged: (val) =>
+                          PreferencesService.setNotifications(val),
+                      activeThumbColor: AppColors.primary,
+                    ),
+                  );
+                },
               ),
-              _buildSettingItem(
-                icon: Icons.fingerprint,
-                title: "Biometric Login",
-                subtitle: "Secure app with fingerprint",
-                trailing: Switch(
-                  value: _biometricEnabled,
-                  onChanged: (val) => setState(() => _biometricEnabled = val),
-                  activeColor: AppColors.primary,
-                ),
+              ValueListenableBuilder<bool>(
+                valueListenable: PreferencesService.biometricsNotifier,
+                builder: (context, enabled, _) {
+                  return _buildSettingItem(
+                    icon: Icons.fingerprint,
+                    title: "Biometric Login",
+                    subtitle: "Secure app with fingerprint",
+                    trailing: Switch(
+                      value: enabled,
+                      onChanged: (val) => PreferencesService.setBiometrics(val),
+                      activeThumbColor: AppColors.primary,
+                    ),
+                  );
+                },
               ),
 
               SizedBox(height: 24.h),
@@ -82,14 +99,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 icon: Icons.download_outlined,
                 title: "Export Data",
                 subtitle: "Download journal as CSV",
-                onTap: () {},
+                onTap: () => _handleExport(),
               ),
               _buildSettingItem(
                 icon: Icons.delete_outline,
                 title: "Reset Data",
                 subtitle: "Clear all trades & plans",
                 isDestructive: true,
-                onTap: () {},
+                onTap: () => _confirmReset(),
               ),
 
               SizedBox(height: 24.h),
@@ -97,14 +114,37 @@ class _SettingsScreenState extends State<SettingsScreen> {
               _buildSettingItem(
                 icon: Icons.info_outline,
                 title: "About App",
-                subtitle: "Version 1.0.0",
-                onTap: () {},
+                subtitle: "Version & Info",
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const AboutScreen()),
+                ),
+              ),
+              SizedBox(height: 24.h),
+              _buildSettingItem(
+                icon: Icons.logout_rounded,
+                title: "Logout",
+                subtitle: "Sign out of your account",
+                isDestructive: true,
+                onTap: () => _handleLogout(),
               ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  void _handleLogout() async {
+    final authService = AuthService();
+    await authService.signOut();
+    if (mounted) {
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        AppRoutes.login,
+        (route) => false,
+      );
+    }
   }
 
   Widget _buildProfileSection() {
@@ -125,13 +165,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ),
               child: Center(
-                child: Text(
-                  "R",
-                  style: TextStyle(
-                    fontSize: 24.sp,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
+                child: ValueListenableBuilder<String>(
+                  valueListenable: ProfileService.nameNotifier,
+                  builder: (context, name, _) {
+                    return Text(
+                      name.isNotEmpty ? name[0].toUpperCase() : "U",
+                      style: TextStyle(
+                        fontSize: 24.sp,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    );
+                  },
                 ),
               ),
             ),
@@ -139,23 +184,36 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  "Rimon Islam",
-                  style: AppTypography.subHeading.copyWith(fontSize: 18.sp),
+                ValueListenableBuilder<String>(
+                  valueListenable: ProfileService.nameNotifier,
+                  builder: (context, name, _) {
+                    return Text(
+                      name,
+                      style: AppTypography.subHeading.copyWith(fontSize: 18.sp),
+                    );
+                  },
                 ),
                 SizedBox(height: 4.h),
-                Text(
-                  "Pro Trader",
-                  style: AppTypography.body.copyWith(
-                    color: AppColors.textBody,
-                    fontSize: 14.sp,
-                  ),
+                ValueListenableBuilder<String>(
+                  valueListenable: ProfileService.titleNotifier,
+                  builder: (context, title, _) {
+                    return Text(
+                      title,
+                      style: AppTypography.body.copyWith(
+                        color: AppColors.textBody,
+                        fontSize: 14.sp,
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
             Spacer(),
             IconButton(
-              onPressed: () {},
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ProfileEditScreen()),
+              ),
               icon: Icon(Icons.edit_outlined, color: AppColors.primary),
             ),
           ],
@@ -251,7 +309,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       trailing
                     else
                       Icon(
-                        Icons.chevron_right,
+                        Icons.chevron_right, // Fixed: removed .outlined
                         size: 20.sp,
                         color: AppColors.textBody.withOpacity(0.5),
                       ),
@@ -276,9 +334,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              "Current Balance: \$${WalletService.balance.toStringAsFixed(2)}",
-              style: AppTypography.body,
+            // Use StatefulWidget to update balance inside dialog
+            StatefulBuilder(
+              builder: (context, setState) {
+                return Text(
+                  "Current Balance: \$${WalletService.balance.toStringAsFixed(2)}",
+                  style: AppTypography.body,
+                );
+              },
             ),
             SizedBox(height: 16.h),
             TextField(
@@ -306,12 +369,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
               children: [
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
                       final amount =
                           double.tryParse(amountController.text) ?? 0;
                       if (amount > 0) {
-                        WalletService.deposit(amount);
-                        Navigator.pop(context);
+                        await WalletService.deposit(amount);
+                        if (context.mounted) Navigator.pop(context);
                       }
                     },
                     style: ElevatedButton.styleFrom(
@@ -327,12 +390,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 SizedBox(width: 12.w),
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
                       final amount =
                           double.tryParse(amountController.text) ?? 0;
                       if (amount > 0) {
-                        WalletService.withdraw(amount);
-                        Navigator.pop(context);
+                        await WalletService.withdraw(amount);
+                        if (context.mounted) Navigator.pop(context);
                       }
                     },
                     style: ElevatedButton.styleFrom(
@@ -349,6 +412,71 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _handleExport() async {
+    try {
+      await DataService.exportData();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              "Data exported successfully!",
+              style: AppTypography.body,
+            ),
+            backgroundColor: AppColors.success,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Export failed: $e", style: AppTypography.body),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
+  }
+
+  void _confirmReset() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        title: Text("Reset All Data", style: AppTypography.subHeading),
+        content: Text(
+          "Are you sure you want to delete all trades, plans, and settings? This action cannot be undone.",
+          style: AppTypography.body,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text("Cancel", style: TextStyle(color: AppColors.textBody)),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await DataService.resetAllData();
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text("All data reset.", style: AppTypography.body),
+                    backgroundColor: AppColors.success,
+                  ),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.error,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text("Confirm Reset"),
+          ),
+        ],
       ),
     );
   }

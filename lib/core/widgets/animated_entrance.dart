@@ -16,20 +16,24 @@ class AnimatedEntrance extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0.0, end: 1.0),
-      duration: duration,
-      curve: Curves.easeOutCubic,
-      builder: (context, value, child) {
-        return Transform.translate(
-          offset: Offset(
-            offset.dx * (1 - value) * 100, // Reduced from 200 for subtle effect
-            offset.dy * (1 - value) * 100,
-          ),
-          child: Opacity(opacity: value, child: child),
-        );
-      },
-      child: child,
+    return RepaintBoundary(
+      child: TweenAnimationBuilder<double>(
+        tween: Tween(begin: 0.0, end: 1.0),
+        duration: duration,
+        curve: Curves.easeOutCubic,
+        builder: (context, value, child) {
+          return Transform.translate(
+            offset: Offset(
+              offset.dx *
+                  (1 - value) *
+                  100, // Reduced from 200 for subtle effect
+              offset.dy * (1 - value) * 100,
+            ),
+            child: Opacity(opacity: value, child: child),
+          );
+        },
+        child: child,
+      ),
     );
   }
 }

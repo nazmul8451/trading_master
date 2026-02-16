@@ -5,6 +5,7 @@ import '../../../../core/constants/app_typography.dart';
 import '../dashboard_screen.dart';
 import '../../journal/journal_screen.dart';
 import '../../plan/goal_plans_library_screen.dart';
+import 'package:get_storage/get_storage.dart';
 
 class SideMenu extends StatelessWidget {
   final int selectedIndex;
@@ -78,12 +79,14 @@ class SideMenu extends StatelessWidget {
                                 Future.delayed(
                                   const Duration(milliseconds: 300),
                                   () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (_) => const JournalScreen(),
-                                      ),
-                                    );
+                                    if (context.mounted) {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => const JournalScreen(),
+                                        ),
+                                      );
+                                    }
                                   },
                                 );
                               },
@@ -98,13 +101,15 @@ class SideMenu extends StatelessWidget {
                                 Future.delayed(
                                   const Duration(milliseconds: 300),
                                   () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (_) =>
-                                            GoalPlansLibraryScreen(),
-                                      ),
-                                    );
+                                    if (context.mounted) {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) =>
+                                              GoalPlansLibraryScreen(),
+                                        ),
+                                      );
+                                    }
                                   },
                                 );
                               },
@@ -158,7 +163,7 @@ class SideMenu extends StatelessWidget {
           ),
           SizedBox(height: 16.h),
           Text(
-            "Alex Sterling",
+            GetStorage().read('user_name') ?? "Trader",
             style: AppTypography.heading.copyWith(
               fontSize: 20.sp,
               color: Colors.white,
@@ -166,7 +171,7 @@ class SideMenu extends StatelessWidget {
           ),
           SizedBox(height: 4.h),
           Text(
-            "Pro Trader",
+            GetStorage().read('user_title') ?? "Pro Trader",
             style: AppTypography.body.copyWith(
               fontSize: 14.sp,
               color: Colors.white54,

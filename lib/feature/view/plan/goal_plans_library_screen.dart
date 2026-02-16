@@ -51,7 +51,6 @@ class _GoalPlansLibraryScreenState extends State<GoalPlansLibraryScreen>
 
   Future<void> _loadPlans() async {
     setState(() => _isLoading = true);
-    await Future.delayed(const Duration(milliseconds: 300));
     final allPlans = _storage.getAllTradeSessions();
     allPlans.sort((a, b) => b.date.compareTo(a.date));
 

@@ -6,16 +6,34 @@ class JournalStorageService {
   static const String _folderKey = 'journal_folders';
   final GetStorage _storage = GetStorage();
 
+  // Cache for deserialized data
+  List<JournalModel>? _cachedJournals;
+  List<JournalFolderModel>? _cachedFolders;
+  String? _journalsHash;
+  String? _foldersHash;
+
   // Journal Methods
   Future<void> saveJournal(JournalModel journal) async {
     List<dynamic> journals = _storage.read(_journalKey) ?? [];
     journals.insert(0, journal.toJson());
     await _storage.write(_journalKey, journals);
+    _invalidateJournalsCache();
   }
 
   List<JournalModel> getAllJournals() {
     List<dynamic> journalsJson = _storage.read(_journalKey) ?? [];
-    return journalsJson.map((json) => JournalModel.fromJson(json as Map<String, dynamic>)).toList();
+    final currentHash = journalsJson.length.toString();
+
+    if (_cachedJournals != null && _journalsHash == currentHash) {
+      return List.from(_cachedJournals!);
+    }
+
+    _cachedJournals = journalsJson
+        .map((json) => JournalModel.fromJson(json as Map<String, dynamic>))
+        .toList();
+    _journalsHash = currentHash;
+
+    return List.from(_cachedJournals!);
   }
 
   List<JournalModel> getJournalsByFolder(String folderId) {
@@ -31,32 +49,61 @@ class JournalStorageService {
     List<dynamic> folders = _storage.read(_folderKey) ?? [];
     folders.add(folder.toJson());
     await _storage.write(_folderKey, folders);
+    _invalidateFoldersCache();
   }
 
   List<JournalFolderModel> getAllFolders() {
     List<dynamic> foldersJson = _storage.read(_folderKey) ?? [];
-    return foldersJson.map((json) => JournalFolderModel.fromJson(json as Map<String, dynamic>)).toList();
+    final currentHash = foldersJson.length.toString();
+
+    if (_cachedFolders != null && _foldersHash == currentHash) {
+      return List.from(_cachedFolders!);
+    }
+
+    _cachedFolders = foldersJson
+        .map(
+          (json) => JournalFolderModel.fromJson(json as Map<String, dynamic>),
+        )
+        .toList();
+    _foldersHash = currentHash;
+
+    return List.from(_cachedFolders!);
   }
 
   Future<void> deleteJournal(String id) async {
     List<dynamic> journalsJson = _storage.read(_journalKey) ?? [];
     journalsJson.removeWhere((json) => json['id'] == id);
     await _storage.write(_journalKey, journalsJson);
+    _invalidateJournalsCache();
   }
 
   Future<void> deleteFolder(String id) async {
     List<dynamic> foldersJson = _storage.read(_folderKey) ?? [];
     foldersJson.removeWhere((json) => json['id'] == id);
     await _storage.write(_folderKey, foldersJson);
-    
+    _invalidateFoldersCache();
+
     // Optional: Delete all journals in that folder
     List<dynamic> journalsJson = _storage.read(_journalKey) ?? [];
     journalsJson.removeWhere((json) => json['folderId'] == id);
     await _storage.write(_journalKey, journalsJson);
+    _invalidateJournalsCache();
   }
 
   Future<void> clearAll() async {
     await _storage.remove(_journalKey);
     await _storage.remove(_folderKey);
+    _invalidateJournalsCache();
+    _invalidateFoldersCache();
+  }
+
+  void _invalidateJournalsCache() {
+    _cachedJournals = null;
+    _journalsHash = null;
+  }
+
+  void _invalidateFoldersCache() {
+    _cachedFolders = null;
+    _foldersHash = null;
   }
 }

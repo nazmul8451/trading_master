@@ -26,7 +26,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     super.initState();
     _loadData();
     // Listen for storage changes to auto-refresh
-    GetStorage().listenKey(TradeStorageService.STORAGE_KEY, (value) {
+    GetStorage().listenKey(TradeStorageService.storageKey, (value) {
       if (mounted) {
         _loadData();
       }
