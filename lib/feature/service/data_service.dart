@@ -5,6 +5,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'trade_storage_service.dart';
 import 'profile_service.dart';
+import 'wallet_service.dart';
 
 class DataService {
   static final TradeStorageService _tradeStorage = TradeStorageService();
@@ -56,16 +57,17 @@ class DataService {
   }
 
   static Future<void> resetAllData() async {
-    // Clear Trades
+    // Clear Trades (user-specific clear is handled inside the service)
     await _tradeStorage.clearAllSessions();
 
-    // Clear all GetStorage data
-    final storage = GetStorage();
-    await storage.erase();
+    // Reset Notifiers and User-specific keys
+    await ProfileService.updateProfile(name: "Trader", title: "Pro Trader");
 
-    // Reset Notifiers
-    ProfileService.nameNotifier.value = "Trader";
-    ProfileService.titleNotifier.value = "Pro Trader";
-    // WalletService.balance is a getter from storage, so it will be 0.0
+    // Wallet reset
+    final storage = GetStorage();
+    await storage.write(WalletService.balanceKey, 0.0);
+    await storage.write(WalletService.historyKey, []);
+
+    // Profiles and Journals are already handled via their services or keys
   }
 }

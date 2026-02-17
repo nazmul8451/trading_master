@@ -3,7 +3,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../../core/routes/app_routes.dart';
-import 'package:get_storage/get_storage.dart';
+import '../../service/auth_service.dart';
+import '../../../core/utils/snackbar_helper.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -27,22 +28,23 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _handleLogin() async {
+    if (!_formKey.currentState!.validate()) return;
+
     setState(() => _isLoading = true);
 
     try {
-      // Bypassing Firebase Auth and directly setting login state
-      final storage = GetStorage();
-      await storage.write('is_logged_in', true);
-      await storage.write('user_email', _emailController.text.trim());
+      final authService = AuthService();
+      await authService.signIn(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
 
       if (mounted) {
         Navigator.pushReplacementNamed(context, AppRoutes.dashboard);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
-        );
+        SnackbarHelper.showError(context, e.toString());
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);

@@ -11,6 +11,7 @@ import '../trade/trade_plan_screen_journal.dart';
 import '../../../core/widgets/premium_background.dart';
 import '../../../core/widgets/glass_container.dart';
 import '../../../core/widgets/animated_entrance.dart';
+import '../../../core/utils/snackbar_helper.dart';
 
 class GoalPlanDetailScreen extends StatefulWidget {
   final TradePlanModel plan;
@@ -187,11 +188,9 @@ class _GoalPlanDetailScreenState extends State<GoalPlanDetailScreen> {
                         );
                         await JournalStorageService().saveJournal(journal);
                         if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Journal entry saved!'),
-                              duration: Duration(seconds: 1),
-                            ),
+                          SnackbarHelper.showSuccess(
+                            context,
+                            'Journal entry saved!',
                           );
                         }
                       },

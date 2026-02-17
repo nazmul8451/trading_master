@@ -4,6 +4,7 @@ import 'dart:async';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/routes/app_routes.dart';
 import '../../service/auth_service.dart';
+import '../../service/sync_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -12,7 +13,8 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
@@ -20,19 +22,21 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   @override
   void initState() {
     super.initState();
-    
+
     _controller = AnimationController(
       duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
 
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeIn),
-    );
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeIn));
 
-    _scaleAnimation = Tween<double>(begin: 0.5, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOutBack),
-    );
+    _scaleAnimation = Tween<double>(
+      begin: 0.5,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutBack));
 
     _controller.forward();
 
@@ -40,12 +44,16 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     Timer(const Duration(seconds: 3), _navigateToNext);
   }
 
-  void _navigateToNext() {
+  Future<void> _navigateToNext() async {
     final authService = AuthService();
-    
+
     if (authService.isLoggedIn) {
-      // User is logged in, go to dashboard
-      Navigator.pushReplacementNamed(context, AppRoutes.dashboard);
+      // Background sync disabled as per user request to stick with GetStorage for now
+      // SyncService.syncAllData();
+
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, AppRoutes.dashboard);
+      }
     } else {
       // User not logged in, go to login
       Navigator.pushReplacementNamed(context, AppRoutes.login);
@@ -109,7 +117,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                     ),
                   ),
                   SizedBox(height: 30.h),
-                  
+
                   // App Name
                   Text(
                     'Trading Master',
@@ -121,7 +129,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                     ),
                   ),
                   SizedBox(height: 8.h),
-                  
+
                   // Tagline
                   Text(
                     'Master Your Trading Psychology',
@@ -132,7 +140,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                     ),
                   ),
                   SizedBox(height: 50.h),
-                  
+
                   // Loading indicator
                   SizedBox(
                     width: 40.w,

@@ -13,6 +13,7 @@ import '../../service/wallet_service.dart';
 import '../settings/settings_screen.dart';
 import 'widgets/side_menu.dart';
 import 'dart:ui';
+import '../../../core/utils/snackbar_helper.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -374,20 +375,7 @@ class DashboardScreenState extends State<DashboardScreen>
         if (_lastPressedAt == null ||
             now.difference(_lastPressedAt!) > const Duration(seconds: 2)) {
           _lastPressedAt = now;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                "Press back again to exit",
-                style: AppTypography.bodySmall.copyWith(color: Colors.white),
-              ),
-              backgroundColor: AppColors.background,
-              duration: const Duration(seconds: 2),
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10.r),
-              ),
-            ),
-          );
+          SnackbarHelper.showInfo(context, "Press back again to exit");
           return;
         }
 

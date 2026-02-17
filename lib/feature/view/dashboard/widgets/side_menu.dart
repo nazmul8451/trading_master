@@ -5,7 +5,9 @@ import '../../../../core/constants/app_typography.dart';
 import '../dashboard_screen.dart';
 import '../../journal/journal_screen.dart';
 import '../../plan/goal_plans_library_screen.dart';
-import 'package:get_storage/get_storage.dart';
+import '../../../service/profile_service.dart';
+import '../../../service/sync_service.dart';
+import '../../../../core/utils/snackbar_helper.dart';
 
 class SideMenu extends StatelessWidget {
   final int selectedIndex;
@@ -53,6 +55,39 @@ class SideMenu extends StatelessWidget {
                       title: "Performance",
                       isActive: selectedIndex == 1,
                       onTap: () => onTabSelected(1),
+                    ),
+                    _buildDrawerItem(
+                      context: context,
+                      icon: Icons.sync,
+                      title: 'Sync to Cloud',
+                      isActive: false,
+                      onTap: () async {
+                        try {
+                          // Show loading dialog
+                          showDialog(
+                            context: context,
+                            barrierDismissible: false,
+                            builder: (context) => const Center(
+                              child: CircularProgressIndicator(),
+                            ),
+                          );
+
+                          await SyncService.syncAllData();
+
+                          if (context.mounted) {
+                            Navigator.pop(context); // Close loading dialog
+                            SnackbarHelper.showSuccess(
+                              context,
+                              "Sync attempt finished. Check logs if data missing.",
+                            );
+                          }
+                        } catch (e) {
+                          if (context.mounted) {
+                            Navigator.pop(context);
+                            SnackbarHelper.showError(context, "Sync Error: $e");
+                          }
+                        }
+                      },
                     ),
                     _buildDrawerItem(
                       context: context,
@@ -179,9 +214,8 @@ class SideMenu extends StatelessWidget {
   }
 
   Widget _buildProfileSection() {
-    final storage = GetStorage();
-    final name = storage.read('user_name') ?? "Trader";
-    final title = storage.read('user_title') ?? "Master Trader";
+    final name = ProfileService.name;
+    final title = ProfileService.title;
 
     return Padding(
       padding: EdgeInsets.fromLTRB(20.w, 40.h, 20.w, 0),

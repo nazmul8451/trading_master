@@ -13,6 +13,7 @@ import 'sub_screens/profile_edit_screen.dart';
 import 'sub_screens/about_screen.dart';
 import '../../service/auth_service.dart';
 import '../../../core/routes/app_routes.dart';
+import '../../../core/utils/snackbar_helper.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -244,16 +245,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ValueListenableBuilder<String>(
                     valueListenable: ProfileService.titleNotifier,
                     builder: (context, title, _) {
-                      return Text(
-                        title.toUpperCase(),
-                        style: AppTypography.label.copyWith(
-                          color: AppColors.getTextBody(
-                            context,
-                          ).withOpacity(0.5),
-                          fontSize: 11.sp,
-                          letterSpacing: 1.2,
-                          fontWeight: FontWeight.w700,
-                        ),
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            title.toUpperCase(),
+                            style: AppTypography.label.copyWith(
+                              color: AppColors.getTextBody(
+                                context,
+                              ).withOpacity(0.5),
+                              fontSize: 11.sp,
+                              letterSpacing: 1.2,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          SizedBox(height: 2.h),
+                          Text(
+                            ProfileService.email,
+                            style: AppTypography.body.copyWith(
+                              fontSize: 10.sp,
+                              color: AppColors.primary.withOpacity(0.7),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
                       );
                     },
                   ),
@@ -486,24 +501,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
     try {
       await DataService.exportData();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              "Data exported successfully!",
-              style: AppTypography.body,
-            ),
-            backgroundColor: AppColors.success,
-          ),
-        );
+        SnackbarHelper.showSuccess(context, "Data exported successfully!");
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Export failed: $e", style: AppTypography.body),
-            backgroundColor: AppColors.error,
-          ),
-        );
+        SnackbarHelper.showError(context, "Export failed: $e");
       }
     }
   }
@@ -528,12 +530,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Navigator.pop(context);
               await DataService.resetAllData();
               if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text("All data reset.", style: AppTypography.body),
-                    backgroundColor: AppColors.success,
-                  ),
-                );
+                SnackbarHelper.showSuccess(context, "All data reset.");
               }
             },
             style: ElevatedButton.styleFrom(

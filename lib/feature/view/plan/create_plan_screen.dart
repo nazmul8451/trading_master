@@ -24,7 +24,7 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
   final _durationController = TextEditingController();
   String _durationType = 'Days';
   String _selectedCurrency = '\$';
-  final List<String> _currencies = ['\$', '৳', '€', '£', '¥', '₹'];
+  final List<String> _currencies = ['\$', 'BDT', '€', '£', '¥', '₹'];
 
   @override
   void dispose() {

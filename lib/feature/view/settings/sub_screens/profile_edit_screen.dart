@@ -5,6 +5,7 @@ import '../../../../core/constants/app_typography.dart';
 import '../../../../core/widgets/premium_background.dart';
 import '../../../../core/widgets/glass_container.dart';
 import '../../../service/profile_service.dart';
+import '../../../../core/utils/snackbar_helper.dart';
 
 class ProfileEditScreen extends StatefulWidget {
   const ProfileEditScreen({super.key});
@@ -37,12 +38,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       title: _titleController.text,
     );
     Navigator.pop(context);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text("Profile Updated!", style: AppTypography.body),
-        backgroundColor: AppColors.success,
-      ),
-    );
+    SnackbarHelper.showSuccess(context, "Profile Updated!");
   }
 
   @override

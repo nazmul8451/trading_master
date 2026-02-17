@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../model/trade_plan_model.dart';
 import '../../service/trade_storage_service.dart';
+import '../../../core/utils/snackbar_helper.dart';
 
 class GoalSheetScreen extends StatelessWidget {
   final TradePlanModel plan;
@@ -13,13 +14,7 @@ class GoalSheetScreen extends StatelessWidget {
     await storage.saveTradeSession(plan);
 
     if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Plan saved successfully!'),
-          backgroundColor: Color(0xFF10B981),
-          duration: Duration(seconds: 2),
-        ),
-      );
+      SnackbarHelper.showSuccess(context, 'Plan saved successfully!');
     }
   }
 

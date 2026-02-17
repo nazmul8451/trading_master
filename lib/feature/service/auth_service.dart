@@ -1,12 +1,20 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_storage/get_storage.dart';
+import 'profile_service.dart';
+import 'sync_service.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GetStorage _storage = GetStorage();
 
+  // Get current user UID
+  String? get currentUid => _auth.currentUser?.uid;
+
   // Get current user
   User? get currentUser => _auth.currentUser;
+
+  // Get current user email
+  String? get currentEmail => _auth.currentUser?.email;
 
   // Auth state changes stream
   Stream<User?> get authStateChanges => _auth.authStateChanges();
@@ -29,10 +37,13 @@ class AuthService {
       // Update display name
       await credential.user?.updateDisplayName(name);
 
-      // Save user info locally
-      await _storage.write('user_name', name);
-      await _storage.write('user_email', email);
+      // Save user info locally (User-specific)
+      await _storage.write(ProfileService.nameKey, name);
+      await _storage.write('user_email', email); // Global email is fine for now
       await _storage.write('is_logged_in', true);
+
+      // Sync data after signup
+      await SyncService.syncAllData();
 
       return credential;
     } on FirebaseAuthException catch (e) {
@@ -55,8 +66,14 @@ class AuthService {
       await _storage.write('user_email', email);
       await _storage.write('is_logged_in', true);
       if (credential.user?.displayName != null) {
-        await _storage.write('user_name', credential.user!.displayName);
+        await _storage.write(
+          ProfileService.nameKey,
+          credential.user!.displayName,
+        );
       }
+
+      // Sync data after signin
+      await SyncService.syncAllData();
 
       return credential;
     } on FirebaseAuthException catch (e) {
@@ -83,23 +100,23 @@ class AuthService {
   String _handleAuthException(FirebaseAuthException e) {
     switch (e.code) {
       case 'weak-password':
-        return 'পাসওয়ার্ড খুব দুর্বল। কমপক্ষে ৬ অক্ষর ব্যবহার করুন।';
+        return 'The password provided is too weak. Use at least 6 characters.';
       case 'email-already-in-use':
-        return 'এই ইমেইল দিয়ে ইতিমধ্যে একাউন্ট আছে।';
+        return 'An account already exists for that email.';
       case 'user-not-found':
-        return 'এই ইমেইল দিয়ে কোন একাউন্ট পাওয়া যায়নি।';
+        return 'No user found for that email.';
       case 'wrong-password':
-        return 'ভুল পাসওয়ার্ড।';
+        return 'Wrong password provided.';
       case 'invalid-email':
-        return 'ইমেইল ঠিকানা সঠিক নয়।';
+        return 'The email address is not valid.';
       case 'user-disabled':
-        return 'এই একাউন্ট নিষ্ক্রিয় করা হয়েছে।';
+        return 'This account has been disabled.';
       case 'too-many-requests':
-        return 'অনেকবার চেষ্টা করা হয়েছে। কিছুক্ষণ পরে আবার চেষ্টা করুন।';
+        return 'Too many requests. Please try again later.';
       case 'network-request-failed':
-        return 'ইন্টারনেট সংযোগ নেই।';
+        return 'No internet connection.';
       default:
-        return 'একটি ত্রুটি ঘটেছে: ${e.message}';
+        return 'An error occurred: ${e.message}';
     }
   }
 

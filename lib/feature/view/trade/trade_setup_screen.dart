@@ -21,7 +21,7 @@ class _TradeSetupScreenState extends State<TradeSetupScreen> {
   final _stopLossController = TextEditingController();
   final _payoutController = TextEditingController();
   String _selectedCurrency = '\$';
-  final List<String> _currencies = ['\$', '৳', '€', '£', '¥', '₹'];
+  final List<String> _currencies = ['\$', 'BDT', '€', '£', '¥', '₹'];
 
   @override
   void dispose() {

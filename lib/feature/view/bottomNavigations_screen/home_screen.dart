@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:fl_chart/fl_chart.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_typography.dart';
 import '../plan/goal_plans_library_screen.dart';
 import '../dashboard/dashboard_screen.dart';
 import '../trade/trade_setup_screen.dart';
+import '../../service/profile_service.dart';
 import '../journal/journal_screen.dart';
 import '../../service/wallet_service.dart';
 import 'package:get_storage/get_storage.dart';
@@ -12,6 +14,8 @@ import 'package:intl/intl.dart';
 import '../../../core/widgets/premium_background.dart';
 import '../../../core/widgets/glass_container.dart';
 import '../../../core/widgets/animated_entrance.dart';
+import '../../../core/utils/compounding_calculator.dart';
+import '../../service/trade_storage_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -23,17 +27,52 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   double _balance = 0.0;
   String _userName = "Trader"; // Default or fetched
+  List<CompoundingPoint> _historyPoints = [];
+  List<CompoundingPoint> _projectionPoints = [];
+  double _growthPercentage = 0.0;
 
   @override
   void initState() {
     super.initState();
     _balance = WalletService.balance;
-    _userName = GetStorage().read('user_name') ?? "Trader";
-    GetStorage().listenKey('available_balance', (value) {
+    _userName = ProfileService.name;
+    _loadChartData();
+
+    GetStorage().listenKey(WalletService.balanceKey, (value) {
       if (mounted) {
         setState(() {
           _balance = (value as num?)?.toDouble() ?? 0.0;
         });
+        _loadChartData();
+      }
+    });
+
+    GetStorage().listenKey(TradeStorageService.storageKey, (value) {
+      if (mounted) _loadChartData();
+    });
+
+    GetStorage().listenKey(WalletService.historyKey, (value) {
+      if (mounted) _loadChartData();
+    });
+  }
+
+  void _loadChartData() {
+    final history = CompoundingCalculator.getHistoricalPoints();
+    final projection = CompoundingCalculator.getProjectedPoints(
+      2.5,
+      7,
+    ); // 7 days projection
+
+    setState(() {
+      _historyPoints = history;
+      _projectionPoints = projection;
+
+      if (history.length > 1) {
+        final start = history.first.balance;
+        final end = history.last.balance;
+        if (start > 0) {
+          _growthPercentage = ((end - start) / start) * 100;
+        }
       }
     });
   }
@@ -451,81 +490,160 @@ class _HomeScreenState extends State<HomeScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          "Compounding Projection",
-          style: AppTypography.subHeading.copyWith(
-            fontSize: 16.sp,
-            color: AppColors.textMain,
-          ),
-        ),
-        SizedBox(height: 12.h),
-        SizedBox(
-          width: double.infinity,
-          height: 150.h,
-          child: Stack(
-            children: [
-              // Simple curve placeholder
-              CustomPaint(
-                size: const Size(double.infinity, double.infinity),
-                painter: _CompoundingCurvePainter(),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              "Compounding Projection",
+              style: AppTypography.subHeading.copyWith(
+                fontSize: 16.sp,
+                color: AppColors.textMain,
               ),
-              Positioned(
-                bottom: 0,
-                right: 0,
-                child: Text(
-                  "+12.4%",
-                  style: AppTypography.buttonText.copyWith(
-                    fontSize: 12.sp,
-                    color: const Color(0xFF10B981),
-                  ),
+            ),
+            if (_growthPercentage != 0)
+              Text(
+                "${_growthPercentage >= 0 ? '+' : ''}${_growthPercentage.toStringAsFixed(1)}%",
+                style: AppTypography.buttonText.copyWith(
+                  fontSize: 12.sp,
+                  color: _growthPercentage >= 0
+                      ? AppColors.success
+                      : AppColors.error,
                 ),
               ),
-            ],
+          ],
+        ),
+        SizedBox(height: 24.h),
+        SizedBox(
+          width: double.infinity,
+          height: 180.h,
+          child: _historyPoints.isEmpty
+              ? Center(
+                  child: Text(
+                    "Not enough data to project",
+                    style: AppTypography.body.copyWith(
+                      color: AppColors.textBody,
+                    ),
+                  ),
+                )
+              : LineChart(
+                  LineChartData(
+                    gridData: const FlGridData(show: false),
+                    titlesData: const FlTitlesData(show: false),
+                    borderData: FlBorderData(show: false),
+                    lineBarsData: [
+                      // Historical Data Bar
+                      LineChartBarData(
+                        spots: _historyPoints.asMap().entries.map((e) {
+                          return FlSpot(e.key.toDouble(), e.value.balance);
+                        }).toList(),
+                        isCurved: true,
+                        color: AppColors.primary,
+                        barWidth: 3,
+                        isStrokeCapRound: true,
+                        dotData: const FlDotData(show: false),
+                        belowBarData: BarAreaData(
+                          show: true,
+                          gradient: LinearGradient(
+                            colors: [
+                              AppColors.primary.withOpacity(0.2),
+                              AppColors.primary.withOpacity(0.0),
+                            ],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                          ),
+                        ),
+                      ),
+                      // Projection Data Bar
+                      if (_projectionPoints.length > 1)
+                        LineChartBarData(
+                          spots: _projectionPoints.asMap().entries.map((e) {
+                            // X-offset by history length
+                            return FlSpot(
+                              (_historyPoints.length - 1 + e.key).toDouble(),
+                              e.value.balance,
+                            );
+                          }).toList(),
+                          isCurved: true,
+                          color: AppColors.primary.withOpacity(0.4),
+                          barWidth: 2,
+                          dashArray: [5, 5],
+                          isStrokeCapRound: true,
+                          dotData: const FlDotData(show: false),
+                        ),
+                    ],
+                    lineTouchData: LineTouchData(
+                      touchTooltipData: LineTouchTooltipData(
+                        getTooltipColor: (_) => AppColors.surface,
+                        getTooltipItems: (spots) {
+                          return spots.map((spot) {
+                            final isHistory = spot.barIndex == 0;
+                            final point = isHistory
+                                ? _historyPoints[spot.x.toInt()]
+                                : _projectionPoints[spot.x.toInt() -
+                                      (_historyPoints.length - 1)];
+
+                            final dateStr = DateFormat(
+                              'MMM dd',
+                            ).format(point.date);
+                            return LineTooltipItem(
+                              "$dateStr (${isHistory ? 'Hist' : 'Proj'})\n",
+                              AppTypography.body.copyWith(
+                                color: AppColors.textBody,
+                                fontSize: 10.sp,
+                              ),
+                              children: [
+                                TextSpan(
+                                  text: NumberFormat.simpleCurrency().format(
+                                    spot.y,
+                                  ),
+                                  style: AppTypography.buttonText.copyWith(
+                                    color: AppColors.primary,
+                                    fontSize: 12.sp,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            );
+                          }).toList();
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+        ),
+        SizedBox(height: 12.h),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _buildChartLegend("History", AppColors.primary),
+            SizedBox(width: 24.w),
+            _buildChartLegend(
+              "Projection",
+              AppColors.primary.withValues(alpha: 0.5),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildChartLegend(String label, Color color) {
+    return Row(
+      children: [
+        Container(
+          width: 8.r,
+          height: 8.r,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
+        SizedBox(width: 8.w),
+        Text(
+          label,
+          style: AppTypography.body.copyWith(
+            fontSize: 10.sp,
+            color: AppColors.textBody,
           ),
         ),
       ],
     );
   }
-}
-
-class _CompoundingCurvePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = const Color(0xFF3B82F6).withOpacity(0.1)
-      ..style = PaintingStyle.fill;
-
-    final linePaint = Paint()
-      ..color = const Color(0xFF3B82F6).withOpacity(0.8)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 3;
-
-    final path = Path();
-    final linePath = Path();
-
-    // Smoother bezier curve
-    path.moveTo(0, size.height);
-    linePath.moveTo(0, size.height * 0.8);
-
-    path.lineTo(0, size.height * 0.8);
-
-    linePath.cubicTo(
-      size.width * 0.3,
-      size.height * 0.8,
-      size.width * 0.6,
-      size.height * 0.4,
-      size.width,
-      size.height * 0.2,
-    );
-
-    path.addPath(linePath, Offset.zero);
-    path.lineTo(size.width, size.height);
-    path.close();
-
-    canvas.drawPath(path, paint);
-    canvas.drawPath(linePath, linePaint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
