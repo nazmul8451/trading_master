@@ -376,7 +376,7 @@ class _GoalPlanDetailScreenState extends State<GoalPlanDetailScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(
-                height: 60.h + MediaQuery.of(context).padding.top,
+                height: 10.h,
               ), // AppBar spacing
               AnimatedEntrance(
                 child: _buildPlanHeader(totalGainPercent, finalBalance),

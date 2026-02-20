@@ -81,17 +81,6 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
-        leading: IconButton(
-          icon: Container(
-            padding: EdgeInsets.all(8.r),
-            decoration: BoxDecoration(
-              color: AppColors.surface.withOpacity(0.5),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(Icons.arrow_back_ios_new, size: 18),
-          ),
-          onPressed: () => Navigator.pop(context),
-        ),
       ),
       body: PremiumBackground(
         child: SingleChildScrollView(
