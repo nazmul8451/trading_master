@@ -5,6 +5,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../model/journal_model.dart';
 import '../../service/journal_storage_service.dart';
+import '../dashboard/dashboard_screen.dart';
 import 'note_editor_screen.dart';
 
 class JournalScreen extends StatefulWidget {
@@ -272,13 +273,20 @@ class _JournalScreenState extends State<JournalScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) {
+        if (didPop) return;
         if (_selectedFolder != null) {
           setState(() => _selectedFolder = null);
-          return false;
+        } else {
+          // If at root of journal, pop and ensure dashboard goes to Home
+          Navigator.pop(context);
+          final dashboard = DashboardScreen.of(context);
+          if (dashboard != null) {
+            dashboard.changePageIndex(0);
+          }
         }
-        return true;
       },
       child: Scaffold(
         backgroundColor: AppColors.background,
@@ -346,6 +354,10 @@ class _JournalScreenState extends State<JournalScreen> {
                 setState(() => _selectedFolder = null);
               } else {
                 Navigator.pop(context);
+                final dashboard = DashboardScreen.of(context);
+                if (dashboard != null) {
+                  dashboard.changePageIndex(0);
+                }
               }
             },
           ),

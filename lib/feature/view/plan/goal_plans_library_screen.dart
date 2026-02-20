@@ -4,6 +4,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../service/trade_storage_service.dart';
 import '../../model/trade_plan_model.dart';
+import '../dashboard/dashboard_screen.dart';
 import 'goal_plan_detail_screen.dart';
 import '../../../core/widgets/premium_background.dart';
 import '../../../core/widgets/glass_container.dart';
@@ -78,64 +79,90 @@ class _GoalPlansLibraryScreenState extends State<GoalPlansLibraryScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        title: Text(
-          _isSelectionMode ? '${_selectedPlanIds.length} Selected' : 'Library',
-          style: AppTypography.heading.copyWith(fontSize: 20.sp),
-        ),
-        centerTitle: true,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: Container(
-            padding: EdgeInsets.all(8.r),
-            decoration: BoxDecoration(
-              color: AppColors.surface.withOpacity(0.5),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              _isSelectionMode ? Icons.close : Icons.arrow_back_ios_new,
-              size: 18,
-            ),
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) {
+        if (didPop) return;
+        if (_isSelectionMode) {
+          _exitSelectionMode();
+        } else {
+          Navigator.pop(context);
+          final dashboard = DashboardScreen.of(context);
+          if (dashboard != null) {
+            dashboard.changePageIndex(0);
+          }
+        }
+      },
+      child: Scaffold(
+        extendBodyBehindAppBar: true,
+        appBar: AppBar(
+          title: Text(
+            _isSelectionMode
+                ? '${_selectedPlanIds.length} Selected'
+                : 'Library',
+            style: AppTypography.heading.copyWith(fontSize: 20.sp),
           ),
-          onPressed: () =>
-              _isSelectionMode ? _exitSelectionMode() : Navigator.pop(context),
-        ),
-        actions: _isSelectionMode
-            ? [
-                IconButton(
-                  icon: const Icon(
-                    Icons.delete_outline,
-                    color: AppColors.error,
-                  ),
-                  onPressed: _selectedPlanIds.isEmpty
-                      ? null
-                      : _showDeleteConfirmation,
-                ),
-              ]
-            : null,
-        bottom: PreferredSize(
-          preferredSize: Size.fromHeight(60.h),
-          child: _buildTabBar(),
-        ),
-      ),
-      body: PremiumBackground(
-        child: _isLoading
-            ? _buildLoadingState()
-            : _filteredPlans.isEmpty
-            ? _buildEmptyState()
-            : ListView.builder(
-                padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 100.h),
-                itemCount: _filteredPlans.length,
-                itemBuilder: (context, index) {
-                  return AnimatedEntrance(
-                    delay: Duration(milliseconds: 50 * index),
-                    child: _buildPlanCard(_filteredPlans[index]),
-                  );
-                },
+          centerTitle: true,
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            icon: Container(
+              padding: EdgeInsets.all(8.r),
+              decoration: BoxDecoration(
+                color: AppColors.surface.withOpacity(0.5),
+                shape: BoxShape.circle,
               ),
+              child: Icon(
+                _isSelectionMode ? Icons.close : Icons.arrow_back_ios_new,
+                size: 18,
+              ),
+            ),
+            onPressed: () {
+              if (_isSelectionMode) {
+                _exitSelectionMode();
+              } else {
+                Navigator.pop(context);
+                final dashboard = DashboardScreen.of(context);
+                if (dashboard != null) {
+                  dashboard.changePageIndex(0);
+                }
+              }
+            },
+          ),
+          actions: _isSelectionMode
+              ? [
+                  IconButton(
+                    icon: const Icon(
+                      Icons.delete_outline,
+                      color: AppColors.error,
+                    ),
+                    onPressed: _selectedPlanIds.isEmpty
+                        ? null
+                        : _showDeleteConfirmation,
+                  ),
+                ]
+              : null,
+          bottom: PreferredSize(
+            preferredSize: Size.fromHeight(60.h),
+            child: _buildTabBar(),
+          ),
+        ),
+        body: PremiumBackground(
+          child: _isLoading
+              ? _buildLoadingState()
+              : _filteredPlans.isEmpty
+              ? _buildEmptyState()
+              : ListView.builder(
+                  padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 100.h),
+                  itemCount: _filteredPlans.length,
+                  itemBuilder: (context, index) {
+                    return AnimatedEntrance(
+                      delay: Duration(milliseconds: 50 * index),
+                      child: _buildPlanCard(_filteredPlans[index]),
+                    );
+                  },
+                ),
+        ),
       ),
     );
   }

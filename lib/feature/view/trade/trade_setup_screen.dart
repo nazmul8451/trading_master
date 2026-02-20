@@ -4,6 +4,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../controller/trade_controller.dart';
 import '../../model/trade_plan_model.dart';
+import '../dashboard/dashboard_screen.dart';
 import 'trade_plan_screen.dart';
 import '../../service/trade_storage_service.dart';
 
@@ -67,148 +68,167 @@ class _TradeSetupScreenState extends State<TradeSetupScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back_ios,
-            color: AppColors.textMain,
-            size: 20.sp,
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) {
+        if (didPop) return;
+        Navigator.pop(context);
+        final dashboard = DashboardScreen.of(context);
+        if (dashboard != null) {
+          dashboard.changePageIndex(0);
+        }
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            icon: Icon(
+              Icons.arrow_back_ios,
+              color: AppColors.textMain,
+              size: 20.sp,
+            ),
+            onPressed: () {
+              Navigator.pop(context);
+              final dashboard = DashboardScreen.of(context);
+              if (dashboard != null) {
+                dashboard.changePageIndex(0);
+              }
+            },
           ),
-          onPressed: () => Navigator.pop(context),
+          title: Text(
+            'Capital-Based Plan Setup',
+            style: AppTypography.subHeading.copyWith(color: AppColors.textMain),
+          ),
+          centerTitle: true,
         ),
-        title: Text(
-          'Capital-Based Plan Setup',
-          style: AppTypography.subHeading.copyWith(color: AppColors.textMain),
-        ),
-        centerTitle: true,
-      ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(20.r),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Set your daily parameters. The app will use your current capital to calculate precise trade sizes for optimal risk management.',
-                style: AppTypography.body.copyWith(color: AppColors.textBody),
-              ),
-              SizedBox(height: 32.h),
-              _buildInputCard(
-                label: 'CURRENT BALANCE ($_selectedCurrency)',
-                hint: '100.00',
-                controller: _balanceController,
-                description: 'Total available trading capital as of today.',
-                prefix: _buildCurrencyDropdown(),
-              ),
-              SizedBox(height: 20.h),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildInputCard(
-                      label: 'TARGET PROFIT',
-                      hint: '10.00',
-                      controller: _targetProfitController,
-                      description: 'Goal for this session.',
-                    ),
-                  ),
-                  SizedBox(width: 16.w),
-                  Expanded(
-                    child: _buildInputCard(
-                      label: 'STOP LOSS',
-                      hint: '10.00',
-                      controller: _stopLossController,
-                      description: 'Max risk limit.',
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 20.h),
-              _buildInputCard(
-                label: 'MARKET PERCENTAGE (%)',
-                hint: '82',
-                controller: _payoutController,
-                description: 'Broker payout ratio (e.g., 82 for 82%).',
-                isPercentage: true,
-              ),
-              SizedBox(height: 32.h),
-              Container(
-                padding: EdgeInsets.all(16.r),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12.r),
-                  border: Border.all(color: AppColors.primary.withOpacity(0.2)),
+        body: SingleChildScrollView(
+          padding: EdgeInsets.all(20.r),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Set your daily parameters. The app will use your current capital to calculate precise trade sizes for optimal risk management.',
+                  style: AppTypography.body.copyWith(color: AppColors.textBody),
                 ),
-                child: Row(
+                SizedBox(height: 32.h),
+                _buildInputCard(
+                  label: 'CURRENT BALANCE ($_selectedCurrency)',
+                  hint: '100.00',
+                  controller: _balanceController,
+                  description: 'Total available trading capital as of today.',
+                  prefix: _buildCurrencyDropdown(),
+                ),
+                SizedBox(height: 20.h),
+                Row(
                   children: [
-                    Icon(
-                      Icons.info_outline,
-                      color: AppColors.primary,
-                      size: 24.sp,
-                    ),
-                    SizedBox(width: 12.w),
                     Expanded(
-                      child: Text(
-                        'The app will calculate your investment per trade based on these values to ensure your capital is protected.',
-                        style: AppTypography.body.copyWith(
-                          color: AppColors.textMain,
-                          fontSize: 13.sp,
-                        ),
+                      child: _buildInputCard(
+                        label: 'TARGET PROFIT',
+                        hint: '10.00',
+                        controller: _targetProfitController,
+                        description: 'Goal for this session.',
+                      ),
+                    ),
+                    SizedBox(width: 16.w),
+                    Expanded(
+                      child: _buildInputCard(
+                        label: 'STOP LOSS',
+                        hint: '10.00',
+                        controller: _stopLossController,
+                        description: 'Max risk limit.',
                       ),
                     ),
                   ],
                 ),
-              ),
-              SizedBox(height: 48.h),
-              SizedBox(
-                width: double.infinity,
-                height: 56.h,
-                child: ElevatedButton(
-                  onPressed: _generatePlan,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.r),
+                SizedBox(height: 20.h),
+                _buildInputCard(
+                  label: 'MARKET PERCENTAGE (%)',
+                  hint: '82',
+                  controller: _payoutController,
+                  description: 'Broker payout ratio (e.g., 82 for 82%).',
+                  isPercentage: true,
+                ),
+                SizedBox(height: 32.h),
+                Container(
+                  padding: EdgeInsets.all(16.r),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12.r),
+                    border: Border.all(
+                      color: AppColors.primary.withOpacity(0.2),
                     ),
-                    elevation: 0,
                   ),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(
-                        'Generate Daily Trade Plan',
-                        style: AppTypography.buttonText.copyWith(
-                          fontSize: 16.sp,
-                          color: AppColors.textMain,
-                        ),
-                      ),
-                      SizedBox(width: 8.w),
                       Icon(
-                        Icons.auto_awesome,
-                        color: AppColors.textMain,
-                        size: 20.sp,
+                        Icons.info_outline,
+                        color: AppColors.primary,
+                        size: 24.sp,
+                      ),
+                      SizedBox(width: 12.w),
+                      Expanded(
+                        child: Text(
+                          'The app will calculate your investment per trade based on these values to ensure your capital is protected.',
+                          style: AppTypography.body.copyWith(
+                            color: AppColors.textMain,
+                            fontSize: 13.sp,
+                          ),
+                        ),
                       ),
                     ],
                   ),
                 ),
-              ),
-              SizedBox(height: 16.h),
-              Center(
-                child: Text(
-                  'STRICT RISK ADHERENCE ENABLED',
-                  style: AppTypography.body.copyWith(
-                    color: AppColors.textBody.withOpacity(0.5),
-                    fontSize: 10.sp,
-                    letterSpacing: 1.5,
-                    fontWeight: FontWeight.bold,
+                SizedBox(height: 48.h),
+                SizedBox(
+                  width: double.infinity,
+                  height: 56.h,
+                  child: ElevatedButton(
+                    onPressed: _generatePlan,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Generate Daily Trade Plan',
+                          style: AppTypography.buttonText.copyWith(
+                            fontSize: 16.sp,
+                            color: AppColors.textMain,
+                          ),
+                        ),
+                        SizedBox(width: 8.w),
+                        Icon(
+                          Icons.auto_awesome,
+                          color: AppColors.textMain,
+                          size: 20.sp,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+                SizedBox(height: 16.h),
+                Center(
+                  child: Text(
+                    'STRICT RISK ADHERENCE ENABLED',
+                    style: AppTypography.body.copyWith(
+                      color: AppColors.textBody.withOpacity(0.5),
+                      fontSize: 10.sp,
+                      letterSpacing: 1.5,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
