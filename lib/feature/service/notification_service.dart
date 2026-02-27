@@ -28,6 +28,7 @@ class NotificationModel {
 
 class NotificationService {
   static const String storageKey = 'notifications_history';
+  static const String unreadCountKey = 'unread_notifications_count';
   final GetStorage _storage = GetStorage();
 
   Future<void> initialize() async {
@@ -67,7 +68,19 @@ class NotificationService {
       List<dynamic> history = _storage.read(storageKey) ?? [];
       history.insert(0, newNotification.toJson());
       _storage.write(storageKey, history);
+
+      // Increment unread count
+      int currentCount = _storage.read(unreadCountKey) ?? 0;
+      _storage.write(unreadCountKey, currentCount + 1);
     }
+  }
+
+  int getUnreadCount() {
+    return _storage.read(unreadCountKey) ?? 0;
+  }
+
+  void resetUnreadCount() {
+    _storage.write(unreadCountKey, 0);
   }
 
   List<NotificationModel> getNotifications() {

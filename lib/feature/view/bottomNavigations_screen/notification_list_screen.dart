@@ -21,6 +21,7 @@ class _NotificationListScreenState extends State<NotificationListScreen> {
   @override
   void initState() {
     super.initState();
+    _notificationService.resetUnreadCount();
     _loadNotifications();
   }
 

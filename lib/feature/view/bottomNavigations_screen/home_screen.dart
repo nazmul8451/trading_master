@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fl_chart/fl_chart.dart';
+import '../../service/notification_service.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_typography.dart';
 import 'notification_list_screen.dart';
@@ -31,6 +32,7 @@ class _HomeScreenState extends State<HomeScreen> {
   List<CompoundingPoint> _historyPoints = [];
   List<CompoundingPoint> _projectionPoints = [];
   double _growthPercentage = 0.0;
+  int _unreadCount = 0;
 
   @override
   void initState() {
@@ -38,7 +40,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
     _balance = WalletService.balance;
     _userName = ProfileService.name;
+    _unreadCount = NotificationService().getUnreadCount();
     _loadChartData();
+
+    GetStorage().listenKey(NotificationService.unreadCountKey, (value) {
+      if (mounted) {
+        setState(() {
+          _unreadCount = value as int? ?? 0;
+        });
+      }
+    });
 
     GetStorage().listenKey(WalletService.balanceKey, (value) {
       if (mounted) {
@@ -210,6 +221,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           child: InkWell(
             onTap: () {
+              NotificationService().resetUnreadCount();
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -218,10 +230,40 @@ class _HomeScreenState extends State<HomeScreen> {
               );
             },
             borderRadius: BorderRadius.circular(12.r),
-            child: Icon(
-              Icons.notifications_outlined,
-              color: AppColors.textMain,
-              size: 22.sp,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Icon(
+                  Icons.notifications_outlined,
+                  color: AppColors.textMain,
+                  size: 22.sp,
+                ),
+                if (_unreadCount > 0)
+                  Positioned(
+                    right: 8,
+                    top: 8,
+                    child: Container(
+                      padding: EdgeInsets.all(2.r),
+                      decoration: const BoxDecoration(
+                        color: AppColors.error,
+                        shape: BoxShape.circle,
+                      ),
+                      constraints: BoxConstraints(
+                        minWidth: 14.sp,
+                        minHeight: 14.sp,
+                      ),
+                      child: Text(
+                        _unreadCount > 9 ? '9+' : '$_unreadCount',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 8.sp,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ),
         ),
