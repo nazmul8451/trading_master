@@ -1,3 +1,4 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'core/routes/app_routes.dart';
@@ -21,6 +22,15 @@ void main() async {
   // Initialize Firebase
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
+  Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  print("Handling background message: ${message.messageId}");
+}
+  
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  
+
+
+
   await GetStorage.init();
   runApp(
     kDebugMode
@@ -28,6 +38,7 @@ void main() async {
         : const MyApp(),
   );
 }
+
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});

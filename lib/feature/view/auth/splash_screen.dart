@@ -4,7 +4,6 @@ import 'dart:async';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/routes/app_routes.dart';
 import '../../service/auth_service.dart';
-import '../../service/sync_service.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:get_storage/get_storage.dart';
 
