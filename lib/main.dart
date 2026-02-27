@@ -15,6 +15,13 @@ import 'package:get_storage/get_storage.dart';
 // Firebase
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'feature/service/notification_service.dart';
+
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  NotificationService().saveNotification(message);
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,23 +29,15 @@ void main() async {
   // Initialize Firebase
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  print("Handling background message: ${message.messageId}");
-}
-  
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-  
-
-
-
   await GetStorage.init();
+  await NotificationService().initialize();
   runApp(
     kDebugMode
         ? DevicePreview(enabled: false, builder: (context) => const MyApp())
         : const MyApp(),
   );
 }
-
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:trade_manager/feature/service/notification_service.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_typography.dart';
+import 'notification_list_screen.dart';
 import '../plan/goal_plans_library_screen.dart';
 import '../dashboard/dashboard_screen.dart';
 import '../trade/trade_setup_screen.dart';
@@ -35,12 +35,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-
-    //notification service
-    NotificationService().requestPermission();
-    NotificationService().getToken();
-
-
 
     _balance = WalletService.balance;
     _userName = ProfileService.name;
@@ -214,10 +208,21 @@ class _HomeScreenState extends State<HomeScreen> {
             borderRadius: BorderRadius.circular(12.r),
             border: Border.all(color: Colors.white.withOpacity(0.05)),
           ),
-          child: Icon(
-            Icons.notifications_outlined,
-            color: AppColors.textMain,
-            size: 22.sp,
+          child: InkWell(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const NotificationListScreen(),
+                ),
+              );
+            },
+            borderRadius: BorderRadius.circular(12.r),
+            child: Icon(
+              Icons.notifications_outlined,
+              color: AppColors.textMain,
+              size: 22.sp,
+            ),
           ),
         ),
       ],
