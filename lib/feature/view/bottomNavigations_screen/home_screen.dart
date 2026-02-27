@@ -84,6 +84,7 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: AppColors.background,
       body: PremiumBackground(
         child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
           padding: EdgeInsets.symmetric(
             horizontal: 20.w.clamp(16, 24).toDouble(),
           ),
