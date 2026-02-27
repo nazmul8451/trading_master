@@ -74,6 +74,7 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
+        surfaceTintColor: Colors.transparent,
         title: Text(
           'New Trading Plan',
           style: AppTypography.heading.copyWith(fontSize: 20.sp),

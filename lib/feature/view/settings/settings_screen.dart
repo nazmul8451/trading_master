@@ -38,7 +38,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
       body: PremiumBackground(
         child: SingleChildScrollView(
-          padding: EdgeInsets.fromLTRB(20.w, 100.h, 20.w, 100.h),
+          // padding: EdgeInsets.fromLTRB(20.w, 100.h, 20.w, 100.h),
           child: Column(
             children: [
               _buildProfileSection(),
