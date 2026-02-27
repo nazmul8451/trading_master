@@ -95,13 +95,13 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  SizedBox(height: 20.h), // Spacing for AppBar
+                  SizedBox(height: 10.h), // Spacing for AppBar
                   AnimatedEntrance(
                     duration: const Duration(milliseconds: 600),
                     child: Column(
                       children: [
                         Container(
-                          padding: EdgeInsets.all(24.r),
+                          padding: EdgeInsets.all(16.r),
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               begin: Alignment.topLeft,
@@ -126,17 +126,17 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
                           ),
                           child: Icon(
                             Icons.auto_graph_rounded,
-                            size: 48.sp,
+                            size: 36.sp,
                             color: AppColors.primary,
                           ),
                         ),
-                        SizedBox(height: 28.h),
+                        SizedBox(height: 16.h),
                         Text(
                           'Plan Your Success',
                           style: AppTypography.heading.copyWith(
-                            fontSize: 34.sp,
+                            fontSize: 26.sp,
                             fontWeight: FontWeight.w900,
-                            letterSpacing: -1.2,
+                            letterSpacing: -1.0,
                             color: Colors.white,
                           ),
                           textAlign: TextAlign.center,
@@ -157,13 +157,13 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
                       ],
                     ),
                   ),
-                  SizedBox(height: 48.h),
+                  SizedBox(height: 20.h),
 
                   // Inputs
                   AnimatedEntrance(
                     delay: const Duration(milliseconds: 200),
                     child: GlassContainer(
-                      padding: EdgeInsets.all(28.r),
+                      padding: EdgeInsets.all(20.r),
                       borderRadius: 32.r,
                       color: AppColors.surface.withOpacity(0.3),
                       border: Border.all(color: Colors.white.withOpacity(0.08)),
@@ -279,13 +279,13 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
                     ),
                   ),
 
-                  SizedBox(height: 40.h),
+                  SizedBox(height: 20.h),
 
                   // Action Button
                   AnimatedEntrance(
                     delay: const Duration(milliseconds: 400),
                     child: Container(
-                      height: 64.h,
+                      height: 56.h,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(24.r),
                         gradient: LinearGradient(
@@ -299,8 +299,8 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
                         boxShadow: [
                           BoxShadow(
                             color: AppColors.primary.withOpacity(0.3),
-                            blurRadius: 24,
-                            offset: const Offset(0, 8),
+                            blurRadius: 16,
+                            offset: const Offset(0, 6),
                           ),
                         ],
                       ),
@@ -332,7 +332,7 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
                       ),
                     ),
                   ),
-                  SizedBox(height: 40.h),
+                  SizedBox(height: 10.h),
                 ],
               ),
             ),
@@ -391,7 +391,7 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
 
   Widget _buildCustomDivider() {
     return Container(
-      margin: EdgeInsets.symmetric(vertical: 24.h),
+      margin: EdgeInsets.symmetric(vertical: 12.h),
       height: 1,
       decoration: BoxDecoration(
         gradient: LinearGradient(
