@@ -6,6 +6,7 @@ import '../../../core/routes/app_routes.dart';
 import '../../service/auth_service.dart';
 import '../../service/sync_service.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:get_storage/get_storage.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -56,8 +57,18 @@ class _SplashScreenState extends State<SplashScreen>
         Navigator.pushReplacementNamed(context, AppRoutes.dashboard);
       }
     } else {
-      // User not logged in, go to login
-      Navigator.pushReplacementNamed(context, AppRoutes.login);
+      // Check if it's the first time
+      final box = GetStorage();
+      final bool isFirstTime = box.read('isFirstTime') ?? true;
+
+      if (mounted) {
+        if (isFirstTime) {
+          Navigator.pushReplacementNamed(context, AppRoutes.onboarding);
+        } else {
+          // User not logged in, go to login
+          Navigator.pushReplacementNamed(context, AppRoutes.login);
+        }
+      }
     }
   }
 

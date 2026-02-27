@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'core/routes/app_routes.dart';
 import 'feature/view/dashboard/dashboard_screen.dart';
 import 'feature/view/auth/splash_screen.dart';
+import 'feature/view/auth/onboarding_screen.dart';
 import 'feature/view/auth/login_screen.dart';
 import 'feature/view/auth/signup_screen.dart';
 
@@ -68,6 +69,7 @@ class MyApp extends StatelessWidget {
           initialRoute: AppRoutes.splash,
           routes: {
             AppRoutes.splash: (context) => const SplashScreen(),
+            AppRoutes.onboarding: (context) => const OnboardingScreen(),
             AppRoutes.login: (context) => const LoginScreen(),
             AppRoutes.signup: (context) => const SignupScreen(),
             AppRoutes.dashboard: (context) => const DashboardScreen(),
