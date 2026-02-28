@@ -7,10 +7,8 @@ class AdService {
   factory AdService() => _instance;
   AdService._internal();
 
-  InterstitialAd? _riskAd;
-  InterstitialAd? _moneyAd;
-  bool _isRiskLoaded = false;
-  bool _isMoneyLoaded = false;
+  InterstitialAd? _interstitialAd;
+  bool _isInterstitialAdLoaded = false;
   DateTime? _lastInterstitialShowTime;
 
   // Test Ad IDs (Official Google Test IDs)
@@ -24,59 +22,35 @@ class AdService {
     return Platform.isAndroid ? 'YOUR_ANDROID_BANNER_ID' : 'YOUR_IOS_BANNER_ID';
   }
 
-  static String get riskInterstitialId {
-    if (kDebugMode) return 'ca-app-pub-3940256099942544/1033173712';
-    return 'ca-app-pub-5476141804305525/4544598552';
-  }
-
-  static String get moneyInterstitialId {
+  static String get interstitialAdUnitId {
     if (kDebugMode) return 'ca-app-pub-3940256099942544/1033173712';
     return 'ca-app-pub-5476141804305525/5904472171';
   }
 
   Future<void> init() async {
     await MobileAds.instance.initialize();
-    loadRiskAd();
-    loadMoneyAd();
+    loadInterstitialAd();
   }
 
-  void loadRiskAd() {
+  void loadInterstitialAd() {
     InterstitialAd.load(
-      adUnitId: riskInterstitialId,
+      adUnitId: interstitialAdUnitId,
       request: const AdRequest(),
       adLoadCallback: InterstitialAdLoadCallback(
         onAdLoaded: (ad) {
-          _riskAd = ad;
-          _isRiskLoaded = true;
-          debugPrint('Risk Interstitial Loaded');
+          _interstitialAd = ad;
+          _isInterstitialAdLoaded = true;
+          debugPrint('Interstitial Ad Loaded');
         },
         onAdFailedToLoad: (error) {
-          _isRiskLoaded = false;
-          debugPrint('Risk Interstitial Failed to Load: $error');
+          _isInterstitialAdLoaded = false;
+          debugPrint('Interstitial Ad Failed to Load: $error');
         },
       ),
     );
   }
 
-  void loadMoneyAd() {
-    InterstitialAd.load(
-      adUnitId: moneyInterstitialId,
-      request: const AdRequest(),
-      adLoadCallback: InterstitialAdLoadCallback(
-        onAdLoaded: (ad) {
-          _moneyAd = ad;
-          _isMoneyLoaded = true;
-          debugPrint('Money Interstitial Loaded');
-        },
-        onAdFailedToLoad: (error) {
-          _isMoneyLoaded = false;
-          debugPrint('Money Interstitial Failed to Load: $error');
-        },
-      ),
-    );
-  }
-
-  void showInterstitialAd({bool isRiskType = false}) {
+  void showInterstitialAd() {
     // Frequency capping: Don't show ads more than once every 2 minutes (10s in debug)
     if (_lastInterstitialShowTime != null) {
       final difference = DateTime.now().difference(_lastInterstitialShowTime!);
@@ -89,37 +63,24 @@ class AdService {
       }
     }
 
-    final isLoaded = isRiskType ? _isRiskLoaded : _isMoneyLoaded;
-    final ad = isRiskType ? _riskAd : _moneyAd;
-
-    if (isLoaded && ad != null) {
-      ad.fullScreenContentCallback = FullScreenContentCallback(
-        onAdDismissedFullScreenContent: (a) {
-          a.dispose();
-          if (isRiskType) {
-            _isRiskLoaded = false;
-            loadRiskAd();
-          } else {
-            _isMoneyLoaded = false;
-            loadMoneyAd();
-          }
+    if (_isInterstitialAdLoaded && _interstitialAd != null) {
+      _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
+        onAdDismissedFullScreenContent: (ad) {
+          ad.dispose();
+          _isInterstitialAdLoaded = false;
+          loadInterstitialAd(); // Load next ad
         },
-        onAdFailedToShowFullScreenContent: (a, error) {
-          a.dispose();
-          if (isRiskType) {
-            _isRiskLoaded = false;
-            loadRiskAd();
-          } else {
-            _isMoneyLoaded = false;
-            loadMoneyAd();
-          }
+        onAdFailedToShowFullScreenContent: (ad, error) {
+          ad.dispose();
+          _isInterstitialAdLoaded = false;
+          loadInterstitialAd();
         },
       );
-      ad.show();
+      _interstitialAd!.show();
       _lastInterstitialShowTime = DateTime.now();
     } else {
       debugPrint('Ad not ready yet');
-      isRiskType ? loadRiskAd() : loadMoneyAd();
+      loadInterstitialAd();
     }
   }
 }

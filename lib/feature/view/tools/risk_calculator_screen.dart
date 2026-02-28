@@ -55,7 +55,7 @@ class _RiskCalculatorScreenState extends State<RiskCalculatorScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            AdService().showInterstitialAd(isRiskType: true);
+            AdService().showInterstitialAd();
             Navigator.pop(context);
           },
         ),
