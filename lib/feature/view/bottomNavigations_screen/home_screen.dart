@@ -4,6 +4,7 @@ import 'package:fl_chart/fl_chart.dart';
 import '../../service/notification_service.dart';
 import '../tools/risk_calculator_screen.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/widgets/banner_ad_widget.dart';
 import '../../../core/constants/app_typography.dart';
 import 'notification_list_screen.dart';
 import '../plan/goal_plans_library_screen.dart';
@@ -148,6 +149,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: _buildCompoundingCurveContent(),
                 ),
               ),
+              SizedBox(height: 24.h),
+              const BannerAdWidget(),
               SizedBox(height: 100.h), // Bottom padding for nav bar
             ],
           ),

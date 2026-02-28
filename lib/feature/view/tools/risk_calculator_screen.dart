@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../../core/utils/risk_calculation_utils.dart';
+import '../../service/ad_service.dart';
 import '../../../core/widgets/premium_background.dart';
 import '../../../core/widgets/glass_container.dart';
 import '../../service/wallet_service.dart';
@@ -49,7 +50,16 @@ class _RiskCalculatorScreenState extends State<RiskCalculatorScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(title: const Text("Risk Calculator")),
+      appBar: AppBar(
+        title: const Text("Risk Calculator"),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            AdService().showInterstitialAd(isRiskType: true);
+            Navigator.pop(context);
+          },
+        ),
+      ),
       body: PremiumBackground(
         child: SingleChildScrollView(
           padding: EdgeInsets.all(20.r),

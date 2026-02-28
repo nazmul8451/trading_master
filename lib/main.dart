@@ -16,6 +16,7 @@ import 'package:get_storage/get_storage.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'feature/service/notification_service.dart';
+import 'feature/service/ad_service.dart';
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -32,6 +33,7 @@ void main() async {
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   await GetStorage.init();
   await NotificationService().initialize();
+  await AdService().init();
   runApp(
     kDebugMode
         ? DevicePreview(enabled: false, builder: (context) => const MyApp())

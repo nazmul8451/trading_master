@@ -5,6 +5,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../model/journal_model.dart';
 import '../../service/journal_storage_service.dart';
+import '../../service/ad_service.dart';
 
 class NoteEditorScreen extends StatefulWidget {
   final JournalModel? existingNote;
@@ -103,6 +104,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
           ),
           onPressed: () async {
             await _saveNote();
+            AdService().showInterstitialAd();
             if (mounted) Navigator.pop(context, true);
           },
         ),
@@ -122,6 +124,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
             TextButton(
               onPressed: () async {
                 await _saveNote();
+                AdService().showInterstitialAd();
                 if (mounted) Navigator.pop(context, true);
               },
               child: Text(

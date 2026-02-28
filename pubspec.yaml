@@ -46,6 +46,7 @@ dependencies:
   csv: ^7.1.0
   flutter_spinkit: 
   firebase_messaging: ^15.2.10
+  google_mobile_ads: ^7.0.0
   
   # Firebase
   firebase_core: ^3.8.1

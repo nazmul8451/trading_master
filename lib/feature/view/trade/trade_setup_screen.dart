@@ -7,6 +7,8 @@ import '../../model/trade_plan_model.dart';
 import '../dashboard/dashboard_screen.dart';
 import 'trade_plan_screen.dart';
 import '../../service/trade_storage_service.dart';
+import '../../service/ad_service.dart';
+import '../../../core/widgets/banner_ad_widget.dart';
 
 class TradeSetupScreen extends StatefulWidget {
   const TradeSetupScreen({super.key});
@@ -58,6 +60,8 @@ class _TradeSetupScreenState extends State<TradeSetupScreen> {
 
       // Save the initial session to storage
       await TradeStorageService().saveTradeSession(plan);
+
+      AdService().showInterstitialAd();
 
       Navigator.push(
         context,
@@ -227,6 +231,8 @@ class _TradeSetupScreenState extends State<TradeSetupScreen> {
                     ),
                   ),
                 ),
+                SizedBox(height: 32.h),
+                const Center(child: BannerAdWidget()),
               ],
             ),
           ),

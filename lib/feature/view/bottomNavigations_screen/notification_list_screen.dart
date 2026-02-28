@@ -6,6 +6,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../../core/widgets/premium_background.dart';
 import '../../../core/widgets/glass_container.dart';
+import '../../../core/widgets/banner_ad_widget.dart';
 
 class NotificationListScreen extends StatefulWidget {
   const NotificationListScreen({super.key});
@@ -54,15 +55,23 @@ class _NotificationListScreenState extends State<NotificationListScreen> {
         ],
       ),
       body: PremiumBackground(
-        child: _notifications.isEmpty
-            ? _buildEmptyState()
-            : ListView.builder(
-                padding: EdgeInsets.all(20.r),
-                itemCount: _notifications.length,
-                itemBuilder: (context, index) {
-                  return _buildNotificationItem(_notifications[index]);
-                },
-              ),
+        child: Column(
+          children: [
+            Expanded(
+              child: _notifications.isEmpty
+                  ? _buildEmptyState()
+                  : ListView.builder(
+                      padding: EdgeInsets.all(20.r),
+                      itemCount: _notifications.length,
+                      itemBuilder: (context, index) {
+                        return _buildNotificationItem(_notifications[index]);
+                      },
+                    ),
+            ),
+            const BannerAdWidget(),
+            SizedBox(height: 16.h),
+          ],
+        ),
       ),
     );
   }

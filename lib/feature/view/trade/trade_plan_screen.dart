@@ -9,6 +9,8 @@ import '../../service/journal_storage_service.dart';
 import 'package:intl/intl.dart';
 import 'trade_plan_screen_journal.dart';
 import '../../service/trade_storage_service.dart';
+import '../../service/ad_service.dart';
+import '../../../core/widgets/banner_ad_widget.dart';
 
 class TradePlanScreen extends StatefulWidget {
   final TradePlanModel plan;
@@ -224,6 +226,7 @@ class _TradePlanScreenState extends State<TradePlanScreen> {
         actions: [
           TextButton(
             onPressed: () {
+              AdService().showInterstitialAd();
               Navigator.pop(context); // Close dialog
               Navigator.pop(context); // Back to setup or home
             },
@@ -257,7 +260,10 @@ class _TradePlanScreenState extends State<TradePlanScreen> {
             color: AppColors.textMain,
             size: 20.sp,
           ),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            AdService().showInterstitialAd();
+            Navigator.pop(context);
+          },
         ),
         title: Text(
           'Active Session',
@@ -269,6 +275,7 @@ class _TradePlanScreenState extends State<TradePlanScreen> {
         padding: EdgeInsets.zero,
         children: [
           _buildSummaryHeader(),
+          const Center(child: BannerAdWidget()),
           SizedBox(height: 16.h),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 16.r),

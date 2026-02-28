@@ -7,6 +7,7 @@ import '../../model/journal_model.dart';
 import '../../service/journal_storage_service.dart';
 import '../dashboard/dashboard_screen.dart';
 import 'note_editor_screen.dart';
+import '../../../core/widgets/banner_ad_widget.dart';
 
 class JournalScreen extends StatefulWidget {
   const JournalScreen({super.key});
@@ -480,13 +481,21 @@ class _JournalScreenState extends State<JournalScreen> {
         'No trading journals recorded',
         Icons.analytics_outlined,
       );
-    return ListView.builder(
-      padding: EdgeInsets.symmetric(horizontal: 20.w),
-      itemCount: _tradingJournals.length,
-      itemBuilder: (context, index) {
-        final journal = _tradingJournals[index];
-        return _buildJournalCard(journal, isTrading: true);
-      },
+    return Column(
+      children: [
+        Expanded(
+          child: ListView.builder(
+            padding: EdgeInsets.symmetric(horizontal: 20.w),
+            itemCount: _tradingJournals.length,
+            itemBuilder: (context, index) {
+              final journal = _tradingJournals[index];
+              return _buildJournalCard(journal, isTrading: true);
+            },
+          ),
+        ),
+        const BannerAdWidget(),
+        SizedBox(height: 16.h),
+      ],
     );
   }
 
@@ -563,6 +572,8 @@ class _JournalScreenState extends State<JournalScreen> {
           )
         else
           ..._personalJournals.map((j) => _buildJournalCard(j)).toList(),
+        SizedBox(height: 24.h),
+        const BannerAdWidget(),
         SizedBox(height: 100.h),
       ],
     );

@@ -8,6 +8,7 @@ import '../../model/trade_plan_model.dart';
 import 'package:intl/intl.dart';
 import 'package:get_storage/get_storage.dart';
 import '../../service/trade_storage_service.dart';
+import '../../../core/widgets/banner_ad_widget.dart';
 
 class AnalyticsScreen extends StatefulWidget {
   const AnalyticsScreen({super.key});
@@ -121,6 +122,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
             _buildTimeframeSelector(),
             SizedBox(height: 16.h),
             _buildProfitChart(),
+            SizedBox(height: 24.h),
+            const BannerAdWidget(),
             SizedBox(height: 24.h),
             Row(
               children: [
