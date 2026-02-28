@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../service/notification_service.dart';
+import '../tools/risk_calculator_screen.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_typography.dart';
 import 'notification_list_screen.dart';
@@ -491,6 +492,19 @@ class _HomeScreenState extends State<HomeScreen> {
               color: const Color(0xFFEF4444),
               onTap: () {
                 DashboardScreen.of(context)?.changePageIndex(1);
+              },
+            ),
+            _buildActionCard(
+              icon: Icons.calculate,
+              label: "Risk Calculator",
+              color: const Color(0xFF10B981),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const RiskCalculatorScreen(),
+                  ),
+                );
               },
             ),
           ],
