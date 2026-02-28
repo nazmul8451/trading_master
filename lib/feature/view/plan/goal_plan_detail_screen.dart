@@ -12,6 +12,7 @@ import '../../../core/widgets/premium_background.dart';
 import '../../../core/widgets/glass_container.dart';
 import '../../../core/widgets/animated_entrance.dart';
 import '../../../core/utils/snackbar_helper.dart';
+import '../../service/notification_service.dart';
 
 class GoalPlanDetailScreen extends StatefulWidget {
   final TradePlanModel plan;
@@ -67,6 +68,10 @@ class _GoalPlanDetailScreenState extends State<GoalPlanDetailScreen> {
     });
 
     await TradeStorageService().saveTradeSession(updatedPlan);
+
+    // Cancel the reminder for this step since it's now completed
+    await NotificationService().cancelGoalReminder(_currentPlan.id, step);
+
     _showFeedback(status, step);
   }
 
@@ -375,9 +380,7 @@ class _GoalPlanDetailScreenState extends State<GoalPlanDetailScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(
-                height: 10.h,
-              ), // AppBar spacing
+              SizedBox(height: 10.h), // AppBar spacing
               AnimatedEntrance(
                 child: _buildPlanHeader(totalGainPercent, finalBalance),
               ),

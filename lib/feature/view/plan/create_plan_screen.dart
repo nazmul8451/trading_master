@@ -9,6 +9,7 @@ import '../../service/trade_storage_service.dart';
 import '../../../core/widgets/premium_background.dart';
 import '../../../core/widgets/glass_container.dart';
 import '../../../core/widgets/animated_entrance.dart';
+import '../../service/notification_service.dart';
 
 class CreatePlanScreen extends StatefulWidget {
   const CreatePlanScreen({super.key});
@@ -59,6 +60,16 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
       );
 
       await TradeStorageService().saveTradeSession(plan);
+
+      // Schedule reminders for each day of the plan
+      for (var entry in plan.entries) {
+        final reminderDate = plan.date.add(Duration(days: entry.step - 1));
+        await NotificationService().scheduleDailyGoalReminder(
+          planId: plan.id,
+          step: entry.step,
+          date: reminderDate,
+        );
+      }
 
       if (mounted) {
         Navigator.push(
