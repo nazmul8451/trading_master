@@ -302,5 +302,142 @@ A very important concept in trading is that **Broken Resistance becomes Support*
         ),
       ],
     ),
+    LearningCategory(
+      id: 'cat_structure',
+      title: 'Market Structure',
+      description: 'The blueprint of price movement.',
+      icon: Icons.account_tree_rounded,
+      color: const Color(0xFF38BDF8),
+      lessons: [
+        LessonModel(
+          id: 'struct_1',
+          title: 'Market Phases',
+          estimatedMinutes: 6,
+          categoryId: 'cat_structure',
+          imageUrl: 'assets/images/learning/market_structure.png',
+          content: '''
+# Market Phases: HH, HL, LH, LL
+
+To understand where the market is going, you must understand **Structure**.
+
+## Uptrend (Bullish)
+A market is in an uptrend when it makes **Higher Highs (HH)** and **Higher Lows (HL)**.
+
+## Downtrend (Bearish)
+A market is in a downtrend when it makes **Lower Lows (LL)** and **Lower Highs (LH)**.
+
+## Why it Matters
+Trading is simply identifying the structure and following it. If the structure is Bullish, you only look for Buy opportunities at the Higher Lows.
+          ''',
+        ),
+        LessonModel(
+          id: 'struct_2',
+          title: 'BOS vs CHoCH',
+          estimatedMinutes: 8,
+          categoryId: 'cat_structure',
+          imageUrl: 'assets/images/learning/market_structure.png',
+          content: '''
+# Advanced Structure: BOS & CHoCH
+
+Price doesn't move in a straight line. It breaks old levels to create new ones.
+
+## BOS (Break of Structure)
+When price continues the trend by breaking the previous HH (in an uptrend) or LL (in a downtrend), it is called a **BOS**. It confirms the trend is healthy.
+
+## CHoCH (Change of Character)
+When price fails to make a new HH and instead breaks below the previous HL, it is a **CHoCH**. This is the first signal that the trend might be reversing.
+
+Mastering BOS and CHoCH allows you to enter trades at the very beginning of a new trend.
+          ''',
+        ),
+      ],
+    ),
+    LearningCategory(
+      id: 'cat_indicators',
+      title: 'Technical Indicators',
+      description: 'Using math to confirm your bias.',
+      icon: Icons.show_chart_rounded,
+      color: const Color(0xFFFB7185),
+      lessons: [
+        LessonModel(
+          id: 'ind_1',
+          title: 'RSI Mastery',
+          estimatedMinutes: 7,
+          categoryId: 'cat_indicators',
+          imageUrl: 'assets/images/learning/rsi.png',
+          content: '''
+# RSI: Relative Strength Index
+
+The **RSI** is a momentum oscillator that measures the speed and change of price movements.
+
+## Overbought (Above 70)
+When RSI is above 70, the market is considered "Overbought." This doesn't mean you should sell immediately, but it signals that the trend might be exhausted.
+
+## Oversold (Below 30)
+When RSI is below 30, the market is "Oversold." It signals that the selling pressure might be ending.
+
+## Divergence: The Secret Weapon
+If price makes a **Higher High** but RSI makes a **Lower High**, it is called "Bearish Divergence." This is one of the strongest reversal signals in trading.
+          ''',
+        ),
+        LessonModel(
+          id: 'ind_2',
+          title: 'Moving Averages (EMA)',
+          estimatedMinutes: 6,
+          categoryId: 'cat_indicators',
+          imageUrl: 'assets/images/learning/ema_crossover.png',
+          content: '''
+# EMA: The Trend Smoother
+
+Moving averages help you filter out "noise" from the price action and see the clear trend.
+
+## Fast vs Slow EMA
+- **20 EMA (Fast)**: Reacts quickly to price changes. Good for short-term trends.
+- **50 EMA (Slow)**: Solid support/resistance for long-term trends.
+
+## The Crossover Strategy
+1. **Golden Cross**: When the 20 EMA crosses **above** the 50 EMA. This confirms a strong Bullish momentum.
+2. **Death Cross**: When the 20 EMA crosses **below** the 50 EMA. This confirms a strong Bearish momentum.
+
+Stay on the right side of the moving average to stay on the right side of the profit.
+          ''',
+        ),
+        LessonModel(
+          id: 'ind_3',
+          title: 'MACD: Momentum Master',
+          estimatedMinutes: 8,
+          categoryId: 'cat_indicators',
+          content: '''
+# MACD: Moving Average Convergence Divergence
+
+The MACD is a multi-purpose tool that shows trend direction, momentum, and potential reversals.
+
+## The Signal Line Crossover
+- **Bullish**: When the MACD line (Blue) crosses **above** the Signal line (Orange).
+- **Bearish**: When the MACD line crosses **below** the Signal line.
+
+## Histogram Insights
+The histogram bars show the distance between the two lines. When the bars are getting taller, momentum is increasing. When they shrink, momentum is fading.
+          ''',
+        ),
+        LessonModel(
+          id: 'ind_4',
+          title: 'Bollinger Bands',
+          estimatedMinutes: 7,
+          categoryId: 'cat_indicators',
+          content: '''
+# Bollinger Bands: Volatility Measurement
+
+These bands expand and contract based on market volatility.
+
+## The Squeeze
+When the bands come close together, it's called a **Squeeze**. This signals that a big price move is about to happen soon.
+
+## Riding the Bands
+In a strong trend, the price will often "hug" the upper band (in an uptrend) or lower band (in a downtrend). A break outside the band often signals a temporary exhaustion.
+          ''',
+        ),
+      ],
+    ),
   ];
 }

@@ -8,6 +8,7 @@ import '../../../../core/widgets/animated_entrance.dart';
 import '../../service/learning_service.dart';
 import '../../model/learning_model.dart';
 import 'lesson_detail_screen.dart';
+import 'widgets/compound_calculator_screen.dart';
 
 class LearningHubScreen extends StatefulWidget {
   const LearningHubScreen({super.key});
@@ -36,6 +37,8 @@ class _LearningHubScreenState extends State<LearningHubScreen> {
                 _buildHeader(context),
                 SizedBox(height: 32.h),
                 _buildProgressCard(progress),
+                SizedBox(height: 32.h),
+                _buildToolsSection(context),
                 SizedBox(height: 40.h),
                 Text(
                   "Learning Categories",
@@ -98,6 +101,73 @@ class _LearningHubScreenState extends State<LearningHubScreen> {
               style: AppTypography.bodySmall.copyWith(color: AppColors.primary),
             ),
           ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildToolsSection(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "Growth Tools",
+          style: AppTypography.heading.copyWith(fontSize: 18.sp),
+        ),
+        SizedBox(height: 16.h),
+        InkWell(
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const CompoundCalculatorScreen(),
+            ),
+          ),
+          child: GlassContainer(
+            padding: EdgeInsets.all(20.r),
+            color: AppColors.secondary.withOpacity(0.1),
+            border: Border.all(color: AppColors.secondary.withOpacity(0.2)),
+            child: Row(
+              children: [
+                Container(
+                  padding: EdgeInsets.all(12.r),
+                  decoration: BoxDecoration(
+                    color: AppColors.secondary.withOpacity(0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.calculate_rounded,
+                    color: AppColors.secondary,
+                    size: 24.sp,
+                  ),
+                ),
+                SizedBox(width: 16.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Compound Growth Calculator",
+                        style: AppTypography.buttonText.copyWith(
+                          fontSize: 16.sp,
+                        ),
+                      ),
+                      Text(
+                        "Visualize your path to a big account.",
+                        style: AppTypography.caption.copyWith(
+                          color: Colors.white.withOpacity(0.5),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: AppColors.secondary,
+                  size: 24.sp,
+                ),
+              ],
+            ),
+          ),
         ),
       ],
     );
