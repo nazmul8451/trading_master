@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/widgets/premium_background.dart';
+import '../../../../core/widgets/glass_container.dart';
 import '../../../../core/widgets/animated_entrance.dart';
 import '../../service/learning_service.dart';
 import '../../model/learning_model.dart';
@@ -62,6 +63,25 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       SizedBox(height: 24.h),
+                      if (widget.lesson.imageUrl != null) ...[
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(20.r),
+                          child: GlassContainer(
+                            padding: EdgeInsets.zero,
+                            color: Colors.white.withOpacity(0.02),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.05),
+                            ),
+                            child: Image.asset(
+                              widget.lesson.imageUrl!,
+                              width: double.infinity,
+                              height: 220.h,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 24.h),
+                      ],
                       _buildContent(),
                       SizedBox(height: 40.h),
                       _buildFooter(),

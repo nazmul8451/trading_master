@@ -6,6 +6,7 @@ class LessonModel {
   final String content;
   final String categoryId;
   final int estimatedMinutes;
+  final String? imageUrl;
 
   LessonModel({
     required this.id,
@@ -13,6 +14,7 @@ class LessonModel {
     required this.content,
     required this.categoryId,
     required this.estimatedMinutes,
+    this.imageUrl,
   });
 
   Map<String, dynamic> toJson() => {
@@ -21,6 +23,7 @@ class LessonModel {
     'content': content,
     'categoryId': categoryId,
     'estimatedMinutes': estimatedMinutes,
+    'imageUrl': imageUrl,
   };
 
   factory LessonModel.fromJson(Map<String, dynamic> json) => LessonModel(
@@ -29,6 +32,7 @@ class LessonModel {
     content: json['content'],
     categoryId: json['categoryId'],
     estimatedMinutes: json['estimatedMinutes'],
+    imageUrl: json['imageUrl'],
   );
 }
 

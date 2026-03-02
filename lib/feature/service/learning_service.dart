@@ -156,6 +156,7 @@ Never trade against the trend on the higher timeframe. If the Daily chart is goi
           title: 'The Hammer Pattern',
           estimatedMinutes: 5,
           categoryId: 'cat_candles',
+          imageUrl: 'assets/images/learning/hammer.png',
           content: '''
 # The Hammer: A Bullish Signal
 
@@ -178,6 +179,7 @@ Always wait for the **next candle** to close above the hammer's body for confirm
           title: 'Engulfing Patterns',
           estimatedMinutes: 6,
           categoryId: 'cat_candles',
+          imageUrl: 'assets/images/learning/engulfing.png',
           content: '''
 # Engulfing Patterns: Strong Momentum
 
@@ -249,6 +251,53 @@ Even if you enter on a 1-minute chart, always check the **15-minute or 1-hour ch
 
 ## 3. Strict Stop Loss
 Never trade without a Stop Loss. A small account can't survive a "hope it goes back up" trade. If the trade hits your SL, **it's okay**. Analyze why, and move to the next opportunity.
+          ''',
+        ),
+      ],
+    ),
+    LearningCategory(
+      id: 'cat_sr',
+      title: 'Support & Resistance',
+      description: 'The foundation of technical analysis.',
+      icon: Icons.layers_rounded,
+      color: const Color(0xFFFACC15),
+      lessons: [
+        LessonModel(
+          id: 'sr_1',
+          title: 'Understanding Support',
+          estimatedMinutes: 5,
+          categoryId: 'cat_sr',
+          imageUrl: 'assets/images/learning/support_resistance.png',
+          content: '''
+# Support: The Floor
+
+**Support** is a price level where a downtrend tends to pause due to a concentration of demand (buying power).
+
+## How it Works
+Think of it as a "floor." When the price drops to this level, buyers see it as "cheap" and start buying, which prevents the price from falling further.
+
+## Key Characteristics
+- **Bounces**: Each time the price touches and bounces off the level, the support becomes stronger.
+- **Psychological Levels**: Round numbers (like \$10, \$50, \$100) often act as natural support.
+- **Historical Areas**: Look for areas where the price has reversed in the past.
+          ''',
+        ),
+        LessonModel(
+          id: 'sr_2',
+          title: 'Understanding Resistance',
+          estimatedMinutes: 5,
+          categoryId: 'cat_sr',
+          imageUrl: 'assets/images/learning/support_resistance.png',
+          content: '''
+# Resistance: The Ceiling
+
+**Resistance** is a price level where an uptrend tends to pause or reverse due to a concentration of supply (selling power).
+
+## How it Works
+Think of it as a "ceiling." When the price rises to this level, sellers see it as "expensive" and start selling, which prevents the price from rising further.
+
+## Role Reversal
+A very important concept in trading is that **Broken Resistance becomes Support**, and **Broken Support becomes Resistance**. If the market breaks through the "ceiling," it often turns into the new "floor."
           ''',
         ),
       ],
