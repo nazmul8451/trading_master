@@ -5,6 +5,7 @@ import '../../../../core/constants/app_typography.dart';
 import '../dashboard_screen.dart';
 import '../../journal/journal_screen.dart';
 import '../../plan/goal_plans_library_screen.dart';
+import '../../learning/learning_hub_screen.dart';
 import '../../../service/profile_service.dart';
 import '../../../service/sync_service.dart';
 import '../../../../core/utils/snackbar_helper.dart';
@@ -131,6 +132,25 @@ class SideMenu extends StatelessWidget {
                     ),
                     _buildDrawerItem(
                       context: context,
+                      icon: Icons.school_rounded,
+                      title: "Trader's Academy",
+                      isActive: false,
+                      onTap: () {
+                        DashboardScreen.of(context)?.toggleDrawer();
+                        Future.delayed(const Duration(milliseconds: 300), () {
+                          if (context.mounted) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const LearningHubScreen(),
+                              ),
+                            );
+                          }
+                        });
+                      },
+                    ),
+                    _buildDrawerItem(
+                      context: context,
                       icon: Icons.folder_copy_rounded,
                       title: "Saved Blueprint",
                       isActive: false,
@@ -181,21 +201,12 @@ class SideMenu extends StatelessWidget {
                             color: AppColors.primary,
                             size: 14.sp,
                           ),
-                          SizedBox(width: 6.w),
-                          Text(
-                            "Pro Cloud",
-                            style: AppTypography.label.copyWith(
-                              color: AppColors.primary,
-                              fontSize: 10.sp,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
                         ],
                       ),
                     ),
                     SizedBox(height: 12.h),
                     Text(
-                      "Build v1.0.4 - Canary",
+                      "v1.0.0",
                       style: AppTypography.body.copyWith(
                         color: Colors.white.withOpacity(0.15),
                         fontSize: 10.sp,

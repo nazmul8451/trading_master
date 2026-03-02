@@ -20,6 +20,7 @@ import '../../../core/widgets/glass_container.dart';
 import '../../../core/widgets/animated_entrance.dart';
 import '../../../core/utils/compounding_calculator.dart';
 import '../../service/trade_storage_service.dart';
+import '../learning/learning_hub_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -506,6 +507,19 @@ class _HomeScreenState extends State<HomeScreen> {
                   context,
                   MaterialPageRoute(
                     builder: (context) => const RiskCalculatorScreen(),
+                  ),
+                );
+              },
+            ),
+            _buildActionCard(
+              icon: Icons.school_rounded,
+              label: "Academy",
+              color: const Color(0xFF6366F1),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const LearningHubScreen(),
                   ),
                 );
               },
